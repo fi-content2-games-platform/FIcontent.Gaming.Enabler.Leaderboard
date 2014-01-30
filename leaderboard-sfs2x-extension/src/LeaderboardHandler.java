@@ -157,6 +157,10 @@ public class LeaderboardHandler extends BaseClientRequestHandler {
 	public static String toSafeString(String s, int maxLength) { // this should return a string that is safe to use in sql inputs, preventing sql injection
 		if (s == null) return null;
 
+		try {
+			s = java.net.URLDecoder.decode(s, "UTF-8"); // to enable spaces
+		} catch (Exception e) {return null;};
+
 		int len = s.length();
 		if (len > maxLength) len = maxLength;
 		StringBuilder res = new StringBuilder(len);
@@ -165,7 +169,7 @@ public class LeaderboardHandler extends BaseClientRequestHandler {
 			if (   ((ch >= 'a') && (ch <= 'z')) // be very careful when changing this! besides ',\,; there are also comment charaters etc.
 				|| ((ch >= 'A') && (ch <= 'Z'))
 				|| ((ch >= '0') && (ch <= '9'))
-				|| (ch == '.')  )
+				|| (ch == '.') || (ch == ' ') )
 			res.append(ch);
 		}
 
