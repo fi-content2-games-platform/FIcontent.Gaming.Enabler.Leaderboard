@@ -118,6 +118,28 @@ public class LeaderboardREST {
 
 		logger.info("//////////// LeaderboardREST server started /////////////");  
 
+	  // for browser (FireFox) cross origin resource sharing (CORS) to confirm that PUT and DELETE work, too
+      options(new Route("/lb/:gameID") {
+         @Override
+         public Object handle(Request request, Response response) {
+			System.out.println("OPTIONS");
+			response.header("Access-Control-Allow-Origin", "*");
+			response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+			response.header("Access-Control-Allow-Headers", "X-Requested-With");
+			response.header("Access-Control-Max-Age", "100");
+			response.status(204);
+			return ("");
+		}
+	  });
+/*
+      put(new Route("/lb/:gameID") {
+         @Override
+         public Object handle(Request request, Response response) {
+			System.out.println("12345");
+			return ("");
+		}
+	  });
+*/
 		///////////////////
 
       post(new Route("/lb/:gameID/:playerID/score") {
@@ -444,6 +466,119 @@ JSON example output:
 			return result.toString();
 		 }
       });
+
+
+		///////////////////
+
+      put(new Route("/lb/:gameID") {
+         @Override
+         public Object handle(Request request, Response response) {
+			String callback = request.queryParams("callback");
+
+			String gameID = toSafeString(request.params(":gameID"), 30);
+System.out.println(gameID);
+
+			Connection con = null;
+			Statement st = null;
+
+			response.type("application/json");
+
+			StringBuilder result = new StringBuilder(40);
+			if (callback != null) {
+				result.append(callback);
+				result.append("(");
+			}
+
+			try {
+				con = DriverManager.getConnection(url, user, password);
+
+				st = con.createStatement();
+
+				String updstr = "CREATE TABLE mygame." + gameID + " (playerID varchar(20) DEFAULT NULL, highscore int(11) DEFAULT NULL, userData blob);";
+System.out.println(updstr);
+System.out.println();
+
+				st.executeUpdate(updstr);
+				response.status(200); // 200 ok
+			} catch (SQLException ex) {
+				response.status(503); // 503 Service Unavailable
+				logger.log(Level.SEVERE, ex.getMessage(), ex);
+//			} catch (Exception e) {
+//				response.status(503); // 503 Service Unavailable
+			} finally {
+				try {
+					if (st != null) {
+						st.close();
+					}
+					if (con != null) {
+						con.close();
+					}
+
+				} catch (SQLException ex) {
+					logger.log(Level.WARNING, ex.getMessage(), ex);
+				}
+			}
+
+			return "";
+		 }
+      });
+
+		///////////////////
+
+      delete(new Route("/lb/:gameID") {
+         @Override
+         public Object handle(Request request, Response response) {
+			String callback = request.queryParams("callback");
+
+			String gameID = toSafeString(request.params(":gameID"), 30);
+System.out.println(gameID);
+
+			Connection con = null;
+			Statement st = null;
+
+			response.type("application/json");
+
+			StringBuilder result = new StringBuilder(40);
+			if (callback != null) {
+				result.append(callback);
+				result.append("(");
+			}
+
+			try {
+				con = DriverManager.getConnection(url, user, password);
+
+				st = con.createStatement();
+
+				String updstr = "DROP TABLE mygame." + gameID;
+System.out.println(updstr);
+System.out.println();
+
+				st.executeUpdate(updstr);
+				response.status(200); // 200 ok
+			} catch (SQLException ex) {
+				response.status(503); // 503 Service Unavailable
+				logger.log(Level.SEVERE, ex.getMessage(), ex);
+//			} catch (Exception e) {
+//				response.status(503); // 503 Service Unavailable
+			} finally {
+				try {
+					if (st != null) {
+						st.close();
+					}
+					if (con != null) {
+						con.close();
+					}
+
+				} catch (SQLException ex) {
+					logger.log(Level.WARNING, ex.getMessage(), ex);
+				}
+			}
+
+			return "";
+		 }
+      });
+
+
   } // main
 
 }
