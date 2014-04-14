@@ -1,4 +1,3 @@
-
 leaderboard
 ===========
 
@@ -25,7 +24,7 @@ and http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard
 
         CREATE DATABASE mygame
 
-3. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID)
+3. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
 		
         CREATE TABLE mygame.<gameID> (
             highscore INT,
