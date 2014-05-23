@@ -237,6 +237,132 @@ System.out.println();
 			return "";
 		 }
       });
+      
+      /**
+       * Updates existing score from playerID, so that only one continuous score for each player is available
+       */
+      post(new Route("/lb/:gameID/:playerID/updatescore") {
+        @Override
+        public Object handle(Request request, Response response) {
+                String callback = request.queryParams("callback");
+
+                String gameID = toSafeString(request.params(":gameID"), 30);
+                String playerID = toSafeString(request.params(":playerID"), 30);
+                System.out.println(gameID);
+                System.out.println(playerID);
+
+                System.out.println("queryparams:");
+                System.out.println(request.queryParams());
+                System.out.println("body:");
+                System.out.println(request.body());
+
+// read other parameters
+                String content = request.body();
+//String content = request.queryParams().toString(); // this wraps the content in an additional array '[...]'
+                String names = "";
+                String values = "";
+                int sumUpdateScore = 0;
+                try {
+                    JsonObject requestObj = JsonObject.readFrom(content);
+//JsonObject requestObj = JsonArray.readFrom(content).get(0).asObject(); // strip the additional '[...]' introduced above
+                    JsonArray scoresArr = requestObj.get("scoreEntries").asArray();
+                    for (int i=0; i<scoresArr.size(); i++) {
+                        JsonObject scoreEntryObj = scoresArr.get(i).asObject();
+                        if (i>0) {
+                            names += ',';
+                            values += ',';
+                        }
+                        names += toSafeString(scoreEntryObj.get("name").asString(), 30);
+                        sumUpdateScore += Integer.parseInt(scoreEntryObj.get("value").asString()); // convert to int as safe method to prevent injection
+                        values += Integer.parseInt(scoreEntryObj.get("value").asString()); // convert to int as safe method to prevent injection
+                    }
+//JsonObject authObj = requestObj.get("authentication").asObject();
+//JsonObject userDataObj = requestObj.get("userData").asObject();
+                } catch (ParseException ex) {
+                    System.out.println("JSON parse exception: " + ex.getMessage());
+                    System.out.println(content);
+                    response.status(400); // 400 bad request
+                    return "Cannot parse JSON payload. " + ex.getMessage();
+                } catch (Exception ex) {
+                    response.status(500); // 500 internal server error
+                    System.out.println("updatescore: exception " + ex.getMessage());
+                    ex.printStackTrace();
+                    return "Cannot read input. " + ex.getMessage();
+                }
+
+                System.out.println(names);
+                System.out.println(values);
+
+                Connection con = null;
+                Statement st = null;
+                ResultSet rs = null;
+
+                response.type("application/json");
+
+                StringBuilder result = new StringBuilder(40);
+                if (callback != null) {
+                    result.append(callback);
+                    result.append("(");
+                }
+
+                try {
+                    con = DriverManager.getConnection(url, user, password);
+
+                    st = con.createStatement();
+
+                    String qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID=\"" + playerID + "\";";
+                    System.out.println(qustr);
+                    System.out.println();
+
+                    rs = st.executeQuery(qustr);
+
+                    boolean playerIDExists = rs.next();
+                    int curr_score = 0;
+                    if (playerIDExists) { // only first position
+                        curr_score = rs.getInt(1);
+                    } else {
+                        System.out.println("playerID " + playerID + " does not exist");
+                    }
+                    int new_score = curr_score + sumUpdateScore;
+
+                    System.out.println("current score: " + curr_score);
+                    System.out.println("update score: " + sumUpdateScore);
+                    System.out.println("new score: " + new_score);
+
+                    String updstr;
+                    if (playerIDExists) {
+                        updstr = "UPDATE mygame." + gameID + " SET highscore=" + new_score + " WHERE playerID=\"" + playerID + "\";";
+                    } else {
+                        updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
+                    }
+
+                    System.out.println(updstr);
+                    System.out.println();
+
+                    st.executeUpdate(updstr);
+                    response.status(200); // 200 ok
+                } catch (SQLException ex) {
+                    response.status(503); // 503 Service Unavailable
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+// } catch (Exception e) {
+// response.status(503); // 503 Service Unavailable
+                } finally {
+                    try {
+                        if (st != null) {
+                            st.close();
+                        }
+                        if (con != null) {
+                            con.close();
+                        }
+
+                    } catch (SQLException ex) {
+                        logger.log(Level.WARNING, ex.getMessage(), ex);
+                    }
+                }
+
+                return "";
+            }
+        });
 
       get(new Route("/lb/:gameID/:playerID/rankingposition") {
          @Override
