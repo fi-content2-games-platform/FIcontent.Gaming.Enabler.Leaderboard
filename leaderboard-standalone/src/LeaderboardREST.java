@@ -51,6 +51,15 @@ public class LeaderboardREST {
 		return result;
 	}
 
+	public static boolean toBoolDef(String v, boolean defaultValue) {
+		boolean result = defaultValue;
+		try {
+			result = Boolean.parseBoolean(v);
+		} catch (Exception e) {
+		}
+		return result;
+	}
+
 	public static String toSafeString(String s, int maxLength) { // this should return a string that is safe to use in sql inputs, preventing sql injection
 		if (s == null) return null;
 
@@ -75,8 +84,8 @@ public class LeaderboardREST {
 
 	///////////////////////////////////////////////////////////////////////////////////////
 
-   public static void main(String[] args) {
-    	Properties prop = new Properties();
+	public static void main(String[] args) {
+		Properties prop = new Properties();
 		//load a properties file
 		try {
 			prop.load(new FileInputStream(configFileName));
@@ -131,16 +140,9 @@ public class LeaderboardREST {
 			return ("");
 		}
 	  });
-/*
-      put(new Route("/lb/:gameID") {
-         @Override
-         public Object handle(Request request, Response response) {
-			System.out.println("12345");
-			return ("");
-		}
-	  });
-*/
-		///////////////////
+
+
+	  /////////////////// post score ///////////////////
 
       post(new Route("/lb/:gameID/:playerID/score") {
          @Override
@@ -162,6 +164,7 @@ System.out.println(request.body());
 			//String content = request.queryParams().toString(); // this wraps the content in an additional array '[...]'
 			String names = "";
 			String values = "";
+			int newHighScore = 0;
 			try {
 				JsonObject requestObj = JsonObject.readFrom(content);
 				//JsonObject requestObj = JsonArray.readFrom(content).get(0).asObject(); // strip the additional '[...]' introduced above
@@ -172,9 +175,11 @@ System.out.println(request.body());
 						names += ',';
 						values += ',';
 					}
-					names += toSafeString(scoreEntryObj.get("name").asString(), 30);
-					//values += scoreEntryObj.get("value").asInt(); // convert to int as safe method to prevent injection
-					values += Integer.parseInt(scoreEntryObj.get("value").asString()); // convert to int as safe method to prevent injection
+					String nName = toSafeString(scoreEntryObj.get("name").asString(), 30);
+					names += nName;
+					int nValue = Integer.parseInt(scoreEntryObj.get("value").asString()); // convert to int as safe method to prevent injection
+					values += nValue;
+					if (nName.equals("highscore")) newHighScore = nValue;
 				}
 				//JsonObject authObj = requestObj.get("authentication").asObject();
 				//JsonObject userDataObj = requestObj.get("userData").asObject();
@@ -195,6 +200,7 @@ System.out.println(values);
 
 			Connection con = null;
 			Statement st = null;
+			ResultSet rs = null;
 
 			response.type("application/json");
 
@@ -205,15 +211,94 @@ System.out.println(values);
 			}
 
 			try {
+//// read options from $options table
 				con = DriverManager.getConnection(url, user, password);
-
 				st = con.createStatement();
+				boolean onlyKeepBestEntry = false;
+				int maxEntries = 0;
+				String qustr = "SELECT * FROM mygame.$options WHERE game = \'" + gameID + "\';";
+System.out.println(qustr);
+System.out.println();
+				rs = st.executeQuery(qustr);
+				ResultSetMetaData rsmd = rs.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				if (rs.next()) { // only first position
+					maxEntries = rs.getInt("maxEntries");
+					onlyKeepBestEntry = rs.getBoolean("onlyKeepBestEntry");
+				}
+System.out.println(result.toString());
+System.out.println();
+//// end read options from database
 
-				String updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
+				//con = DriverManager.getConnection(url, user, password);
+				if (!onlyKeepBestEntry) {
+					st = con.createStatement();
+					String updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
 System.out.println(updstr);
 System.out.println();
+					st.executeUpdate(updstr);
+				} else {
+//// test if exists and which value
+					con = DriverManager.getConnection(url, user, password);
+					st = con.createStatement();
+					qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = \'" + playerID + "\';";
+	System.out.println(qustr);
+	System.out.println();
+					rs = st.executeQuery(qustr);
+					rsmd = rs.getMetaData();
+					boolean exists = false;
+					int currentBestScore = 0;
+					if (rs.next()) { // only first position
+						exists = true;
+						currentBestScore = rs.getInt("highscore");
+					}
 
-				st.executeUpdate(updstr);
+
+//// if not exists or if value lower, replace/insert
+System.out.println("current score: " + currentBestScore);
+System.out.println("new high score: " + newHighScore);
+					if (!exists || (newHighScore > currentBestScore)) {
+						st = con.createStatement();
+						String updstr = "REPLACE INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
+System.out.println(updstr);
+System.out.println();
+						st.executeUpdate(updstr);
+					}
+				}
+
+
+////
+// delete entries if too many
+//delete from TableName where entityID not in (select top 1000 entityID from TableName)
+				if (maxEntries > 0) {
+					st = con.createStatement();
+//get highscore of entry number maxEntries
+					//qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = \'" + playerID + "\';";
+					qustr = "SELECT highscore FROM mygame." + gameID + " ORDER by highscore DESC limit " + maxEntries + ",1;";
+System.out.println(qustr);
+System.out.println();
+					rs = st.executeQuery(qustr);
+					rsmd = rs.getMetaData();
+					boolean exists = false;
+					int score = 0;
+					if (rs.next()) { // only first position
+						exists = true;
+						score = rs.getInt("highscore");
+					}
+
+					if (exists) {
+System.out.println("deleting all scores below: " + score);
+						// delete rows with highscore below threshold
+						st = con.createStatement();
+						String updstr = "DELETE FROM mygame." + gameID + " where highscore < " + score + ";";
+System.out.println(updstr);
+System.out.println();
+						st.executeUpdate(updstr);
+					}
+				}
+////
+
+
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
 				response.status(503); // 503 Service Unavailable
@@ -238,6 +323,9 @@ System.out.println();
 		 }
       });
 
+
+	  /////////////////// get ranking position ///////////////////
+
       get(new Route("/lb/:gameID/:playerID/rankingposition") {
          @Override
          public Object handle(Request request, Response response) {
@@ -249,8 +337,8 @@ System.out.println();
 			// read other parameters
 			String orderBy = toSafeString(request.queryParams("orderBy"), 30);
 			if (orderBy == null) orderBy = "highscore";
-			String higherIsBetterStr = request.queryParams("higherIsBetter");
-			boolean higherIsBetter = (higherIsBetterStr==null) || (!higherIsBetterStr.equals("false")); // set to true (default) if not param set to false
+			//String higherIsBetterStr = request.queryParams("higherIsBetter");
+			//boolean higherIsBetter = (higherIsBetterStr==null) || (!higherIsBetterStr.equals("false")); // set to true (default) if not param set to false
 
 			Connection con = null;
 			Statement st = null;
@@ -269,7 +357,8 @@ System.out.println();
 
 				st = con.createStatement();
 
-				String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + "." + orderBy + (higherIsBetter?" DESC":"") +") x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+				//String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + "." + orderBy + (higherIsBetter?" DESC":"") +") x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+				String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + "." + orderBy + " DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
 System.out.println(qustr);
 System.out.println();
 
@@ -324,8 +413,7 @@ System.out.println();
       });
 
 
-//		static class getRankedListParams {
-//		}
+	  /////////////////// get ranked (ordered) list of entries ///////////////////
 
       get(new Route("/lb/:gameID/rankedlist") {
          @Override
@@ -468,7 +556,7 @@ JSON example output:
       });
 
 
-		///////////////////
+	  /////////////////// create new game table ///////////////////
 
       put(new Route("/lb/:gameID") {
          @Override
@@ -477,6 +565,28 @@ JSON example output:
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
 System.out.println(gameID);
+
+			// read other parameters
+			String content = request.body();
+System.out.print("a,");
+System.out.print(content);
+System.out.println(",a2");
+			JsonObject requestObj = JsonObject.readFrom(content);
+System.out.println("b");
+
+			int maxEntries = Integer.parseInt(requestObj.get("maxEntries").asString());
+System.out.println(maxEntries);
+			boolean onlyKeepBestEntry = Boolean.parseBoolean(requestObj.get("onlyKeepBestEntry").asString());
+System.out.println(onlyKeepBestEntry);
+System.out.println("d");
+
+			String highScoreNames = "highscore int(11) DEFAULT NULL, ";
+			JsonArray scoresArr = requestObj.get("highScoreNames").asArray();
+			for (int i=0; i<scoresArr.size(); i++) {
+				highScoreNames += toSafeString(scoresArr.get(i).asString(), 30) + " int(11) DEFAULT NULL, ";
+			}
+System.out.println(highScoreNames);
+System.out.println("e");
 
 			Connection con = null;
 			Statement st = null;
@@ -491,14 +601,21 @@ System.out.println(gameID);
 
 			try {
 				con = DriverManager.getConnection(url, user, password);
-
 				st = con.createStatement();
 
-				String updstr = "CREATE TABLE mygame." + gameID + " (playerID varchar(20) DEFAULT NULL, highscore int(11) DEFAULT NULL, userData blob);";
+				String updstr = "CREATE TABLE mygame." + gameID + " (playerID varchar(20) DEFAULT NULL" + (onlyKeepBestEntry?" UNIQUE KEY":"") + ", " + highScoreNames + "userData blob);";
 System.out.println(updstr);
 System.out.println();
-
 				st.executeUpdate(updstr);
+
+//// add entry to $options
+				st = con.createStatement();
+				updstr = "INSERT INTO mygame.$options (game, maxEntries, onlyKeepBestEntry) VALUES (\'" + gameID + "\', " + maxEntries + ", " + (onlyKeepBestEntry?"1":"0") +");";
+System.out.println(updstr);
+System.out.println();
+				st.executeUpdate(updstr);
+////
+
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
 				response.status(503); // 503 Service Unavailable
@@ -523,7 +640,8 @@ System.out.println();
 		 }
       });
 
-		///////////////////
+
+	  /////////////////// delete game table ///////////////////
 
       delete(new Route("/lb/:gameID") {
          @Override
@@ -554,6 +672,18 @@ System.out.println(updstr);
 System.out.println();
 
 				st.executeUpdate(updstr);
+
+
+//// delete entry from $options
+				st = con.createStatement();
+				updstr = "DELETE FROM mygame.$options where game = \'" + gameID + "\';";
+System.out.println(updstr);
+System.out.println();
+				st.executeUpdate(updstr);
+////
+
+
+
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
 				response.status(503); // 503 Service Unavailable
@@ -568,7 +698,6 @@ System.out.println();
 					if (con != null) {
 						con.close();
 					}
-
 				} catch (SQLException ex) {
 					logger.log(Level.WARNING, ex.getMessage(), ex);
 				}
@@ -580,5 +709,4 @@ System.out.println();
 
 
   } // main
-
 }
