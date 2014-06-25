@@ -568,22 +568,21 @@ System.out.println(gameID);
 
 			// read other parameters
 			String content = request.body();
-System.out.print("a,");
-System.out.print(content);
-System.out.println(",a2");
 			JsonObject requestObj = JsonObject.readFrom(content);
-System.out.println("b");
 
 			int maxEntries = Integer.parseInt(requestObj.get("maxEntries").asString());
 System.out.println(maxEntries);
 			boolean onlyKeepBestEntry = Boolean.parseBoolean(requestObj.get("onlyKeepBestEntry").asString());
 System.out.println(onlyKeepBestEntry);
-System.out.println("d");
 
 			String highScoreNames = "highscore int(11) DEFAULT NULL, ";
+System.out.print("d>");
 			JsonArray scoresArr = requestObj.get("highScoreNames").asArray();
+			//JsonArray scoresArr = requestObj.getJSONArray("highScoreNames");
+System.out.println("d2");
 			for (int i=0; i<scoresArr.size(); i++) {
-				highScoreNames += toSafeString(scoresArr.get(i).asString(), 30) + " int(11) DEFAULT NULL, ";
+				String s = scoresArr.get(i).asString();
+				if (!s.isEmpty()) highScoreNames += toSafeString(s, 30) + " int(11) DEFAULT NULL, ";
 			}
 System.out.println(highScoreNames);
 System.out.println("e");

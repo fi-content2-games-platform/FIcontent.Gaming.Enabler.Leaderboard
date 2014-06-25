@@ -60,13 +60,14 @@ function getRankedList(gameID) {
 
 function createGame(gameID, maxEntries, onlyKeepBestEntry) {
 	var pstr = url + gameID;
+	var asn = document.getElementById("additionalScoreNames").value.split(",");
 
 	$.ajax({
 		url: pstr,
 		data: JSON.stringify({
 				maxEntries: maxEntries,
 				onlyKeepBestEntry: onlyKeepBestEntry,
-				highScoreNames: [document.getElementById("additionalScoreNames").innerHTML = txt]
+				highScoreNames: asn
 			}),
 		processData: false,
 		type: "PUT",
