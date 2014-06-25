@@ -24,13 +24,23 @@ and http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard
 
         CREATE DATABASE mygame
 
-3. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
+3. Create a table called '$options':
+
+		CREATE TABLE mygame.$options (
+			game varchar(30),
+			maxEntries INT,
+			onlyKeepBestEntry TINYINT
+		);
+
+4. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
 		
         CREATE TABLE mygame.<gameID> (
-            highscore INT,
-            playerID VARCHAR(50)
+            highscore int(11),
+            playerID VARCHAR(30),
+			userData blob
         );
-	
+
+
 #### Server
 
 1. Make sure you have java installed

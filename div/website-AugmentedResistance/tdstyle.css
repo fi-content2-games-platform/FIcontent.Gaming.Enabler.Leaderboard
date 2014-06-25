@@ -1,0 +1,92 @@
+@font-face {
+	font-family: Xirod;
+	src: url("xirod.ttf");
+}
+
+body {
+	margin:0px;
+	background:url('splashScreen.jpg') no-repeat center center fixed;
+	background-size: cover;
+	font-family: Xirod;
+	background-repeat:no-repeat;
+}
+
+h1 {
+	font-family: Arial, Helvetica;
+}
+
+#header {
+	//position:relative;
+	height:110;
+	//top:0;
+	background-image:url('header-bg.png');
+	background-repeat:repeat-x;
+	padding:10px 50px;
+	color:rgb(187, 245, 255);
+}
+
+#logo {
+	position:absolute;
+	right:50;
+	top:8;
+}
+
+#main {
+	padding:30px;
+}
+
+#cimg {
+	position:absolute;
+	right:50px;
+	top:200px;
+}
+
+#inner {
+	margin-left:auto;
+	margin-right:auto;
+	width:580px;
+}
+
+#inner table {
+	background-color:rgba(0, 0, 0, 0.75);
+	border: 3px;
+	border-style:solid;
+	border-color:rgb(0, 208, 242);
+	border-spacing:5px 5px;
+	color: rgb(187, 245, 255);
+}
+
+#inner th {
+	text-align:left;
+	padding:5px 20px;
+	background-color: rgba(0, 208, 242,0.25);
+	font-size: 16pt;
+	color:rgb(0, 208, 242);
+}
+
+#inner td {
+	padding:5px 20px;
+	font-size: 12pt;
+}
+
+#inner  .score {
+	text-align:left;
+}
+
+#inner  .rank {
+	text-align:left;
+}
+
+
+
+a:link {
+	color: rgb(187, 245, 255);
+	}
+
+a:visited {
+	color: rgb(255, 91, 53);
+}
+
+a:hover {
+	color: white;
+}
