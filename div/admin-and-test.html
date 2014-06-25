@@ -1,6 +1,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+div.group {
+	background-color:#CCC;
+	margin:25px;
+	padding:6px;
+}
+</style>
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' type="text/javascript"></script>
 <script type="text/javascript">
 
@@ -59,7 +66,7 @@ function createGame(gameID, maxEntries, onlyKeepBestEntry) {
 		data: JSON.stringify({
 				maxEntries: maxEntries,
 				onlyKeepBestEntry: onlyKeepBestEntry,
-				highScoreNames: ["bonusscore"]
+				highScoreNames: [document.getElementById("additionalScoreNames").innerHTML = txt]
 			}),
 		processData: false,
 		type: "PUT",
@@ -86,10 +93,21 @@ function deleteGame(gameID) {
 <body>
 
 <form>
-game id: <input type="text" id="myGameID" value="game1"> max entries: <input type="text" id="myMaxEntries" value="0"> onlyKeepBestEntry: <input type="text" id="myOnlyKeepBestEntry" value="false"> <button type="button" onclick="createGame(document.getElementById('myGameID').value, document.getElementById('myMaxEntries').value, document.getElementById('myOnlyKeepBestEntry').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
+game id: <input type="text" id="myGameID" value="game1">
+<div class="group">
+	<i>game table creation options:</i><br>
+	max entries: <input type="text" id="myMaxEntries" value="0"><br>
+	onlyKeepBestEntry: <input type="text" id="myOnlyKeepBestEntry" value="false"><br>
+	additionalScoreNames (sep. by commas): <input type="text" id="additionalScoreNames" value=""><br>
+	<button type="button" onclick="createGame(document.getElementById('myGameID').value, document.getElementById('myMaxEntries').value, document.getElementById('myOnlyKeepBestEntry').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
+</div>
 player ID: <input type="text" id="myPlayerID" value="?"><br>
-score <input type="text" id="myScore" value="2"><button type="button" onclick="submitScore(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value, document.getElementById('myScore').value)">post score</button>(uses player ID from text field above)<br>
-user's highest score: <div id="highestScore">-</div> <button type="button" onclick="getRankingPos(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value)">get</button>(uses player ID from text field above)<br>
+user's highest score: <span id="highestScore">-</span> <button type="button" onclick="getRankingPos(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value)">get/update</button> (uses player ID from text field above)<br>
+<div class="group">
+	<i>post score options:</i><br>
+	highscore <input type="text" id="myScore" value="2"><br>
+	<button type="button" onclick="submitScore(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value, document.getElementById('myScore').value)">post score</button>(uses player ID from text field above)
+</div>
 <p>
 <button type="button" onclick="getRankedList(document.getElementById('myGameID').value)">show ranked list</button>
 </p>
