@@ -1446,3 +1446,19 @@ com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown table 'mygame
 	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:527)
 	at java.lang.Thread.run(Unknown Source)
 
+Jul 03, 2014 3:57:44 PM LeaderboardREST main
+INFO: My first log
+Jul 03, 2014 3:57:44 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 03, 2014 4:05:15 PM LeaderboardREST main
+INFO: My first log
+Jul 03, 2014 4:05:15 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 03, 2014 4:24:57 PM LeaderboardREST main
+INFO: My first log
+Jul 03, 2014 4:24:57 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 03, 2014 4:29:09 PM LeaderboardREST main
+INFO: My first log
+Jul 03, 2014 4:29:09 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////

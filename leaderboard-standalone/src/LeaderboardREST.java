@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-
 // mysql
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +19,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.sql.Blob;
 
 // logging
 import java.util.logging.FileHandler;
@@ -38,6 +38,11 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import com.eclipsesource.json.ParseException;
+
+// base64 conversion
+//import sun.misc.BASE64Decoder;
+import org.apache.commons.codec.binary.Base64;
+import java.util.Arrays;
 
 // configuration file
 import java.io.FileInputStream;
@@ -111,7 +116,7 @@ System.out.println("--> to Social Network: " + gameID + " " + playerID + " " + n
 				+ " \"user\":{\"id\":\"0815\",\"name\":\"Leaderboard Server\"},\"type\":\"POST\"\n"
 				+ "}";
 			String urlParameters = "";
-	 
+
 			// Send post request
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
@@ -231,7 +236,7 @@ System.out.println(request.body());
 			String names = "";
 			String values = "";
 			int newHighScore = 0;
-			byte[] userData;
+			byte[] userData = null;
 			try {
 				JsonObject requestObj = JsonObject.readFrom(content);
 				//JsonObject requestObj = JsonArray.readFrom(content).get(0).asObject(); // strip the additional '[...]' introduced above
@@ -249,7 +254,13 @@ System.out.println(request.body());
 					if (nName.equals("highscore")) newHighScore = nValue;
 				}
 				//JsonObject authObj = requestObj.get("authentication").asObject();
-				userData = Base64.decodeBase64(requestObj.get("userData").asString().getBytes()); // decode base64 to binary
+//				if (!requestObj.isNull("userData")) {
+JsonValue userDataBase64 = requestObj.get("userData");					
+if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString().getBytes()); // decode base64 to binary
+//				}
+				//BASE64Decoder decoder = new BASE64Decoder();
+				//userData = decoder.decodeBuffer(requestObj.get("userData").asString().getBytes());
+
 			} catch (ParseException ex) {
 System.out.println("JSON parse exception: " + ex.getMessage());
 System.out.println(content);
@@ -320,11 +331,15 @@ System.out.println();
 
 				//con = DriverManager.getConnection(url, user, password);
 				if (!onlyKeepBestEntry) {
-					st = con.createStatement();
-					String updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
-System.out.println(updstr);
-System.out.println();
-					st.executeUpdate(updstr);
+					//st = con.createStatement();
+					//String updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
+//System.out.println(updstr);
+//System.out.println();
+//					st.executeUpdate(updstr);
+					PreparedStatement pst = con.prepareStatement("INSERT INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");");
+					pst.setString(1, playerID);
+					if (userData!=null) pst.setBytes(2, userData);
+					pst.executeUpdate();
 				} else {
 //// test if exists and which value
 					con = DriverManager.getConnection(url, user, password);
@@ -346,11 +361,15 @@ System.out.println();
 System.out.println("current score: " + currentBestScore);
 System.out.println("new high score: " + newHighScore);
 					if (!exists || (newHighScore > currentBestScore)) {
-						st = con.createStatement();
-						String updstr = "REPLACE INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
-System.out.println(updstr);
-System.out.println();
-						st.executeUpdate(updstr);
+//						st = con.createStatement();
+//						String updstr = "REPLACE INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
+//System.out.println(updstr);
+//System.out.println();
+//						st.executeUpdate(updstr);
+						PreparedStatement pst = con.prepareStatement("REPLACE INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");");
+						pst.setString(1, playerID);
+						if (userData!=null) pst.setBytes(2, userData);
+						pst.executeUpdate();
 					}
 				}
 
@@ -573,7 +592,13 @@ System.out.println();
 						if (rs.getObject(i) != null) {
 							if (!firstOutpCol) result.append(',');
 							String column = rsmd.getColumnName(i);
-							Object value = rs.getString(i);
+							Object value;
+							if (!column.equals("userData")) {
+								value = rs.getString(i);
+							} else {
+								Blob blob = rs.getBlob(i);
+								value = Base64.encodeBase64(blob.getBytes(1, (int) blob.length()));
+							}
 							result.append('\"');
 							result.append(column);
 							result.append("\":\"");
