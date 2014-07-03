@@ -61,13 +61,15 @@ function getRankedList(gameID) {
 function createGame(gameID, maxEntries, onlyKeepBestEntry) {
 	var pstr = url + gameID;
 	var asn = document.getElementById("additionalScoreNames").value.split(",");
+	var snetw = document.getElementById("socialnetwork").value;
 
 	$.ajax({
 		url: pstr,
 		data: JSON.stringify({
 				maxEntries: maxEntries,
 				onlyKeepBestEntry: onlyKeepBestEntry,
-				highScoreNames: asn
+				highScoreNames: asn,
+				socialnetwork: snetw
 			}),
 		processData: false,
 		type: "PUT",
@@ -100,6 +102,7 @@ game id: <input type="text" id="myGameID" value="game1">
 	max entries: <input type="text" id="myMaxEntries" value="0"><br>
 	onlyKeepBestEntry: <input type="text" id="myOnlyKeepBestEntry" value="false"><br>
 	additionalScoreNames (sep. by commas): <input type="text" id="additionalScoreNames" value=""><br>
+	social network database URL: <input type="text" id="socialnetwork" value=""><br>
 	<button type="button" onclick="createGame(document.getElementById('myGameID').value, document.getElementById('myMaxEntries').value, document.getElementById('myOnlyKeepBestEntry').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
 </div>
 player ID: <input type="text" id="myPlayerID" value="?"><br>

@@ -1321,3 +1321,128 @@ com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'game5' already
 	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:527)
 	at java.lang.Thread.run(Unknown Source)
 
+Jun 30, 2014 6:18:15 PM LeaderboardREST main
+INFO: My first log
+Jun 30, 2014 6:18:15 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jun 30, 2014 6:55:58 PM LeaderboardREST main
+INFO: My first log
+Jun 30, 2014 6:55:58 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jun 30, 2014 6:58:01 PM LeaderboardREST main
+INFO: My first log
+Jun 30, 2014 6:58:01 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jun 30, 2014 7:01:55 PM LeaderboardREST main
+INFO: My first log
+Jun 30, 2014 7:01:55 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 02, 2014 1:50:03 PM LeaderboardREST main
+INFO: My first log
+Jul 02, 2014 1:50:03 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 02, 2014 5:03:32 PM LeaderboardREST main
+INFO: My first log
+Jul 02, 2014 5:03:32 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 02, 2014 5:27:24 PM LeaderboardREST main
+INFO: My first log
+Jul 02, 2014 5:27:24 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 02, 2014 5:27:42 PM LeaderboardREST$5 handle
+SEVERE: Table 'game42' already exists
+com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'game42' already exists
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(Unknown Source)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)
+	at java.lang.reflect.Constructor.newInstance(Unknown Source)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:411)
+	at com.mysql.jdbc.Util.getInstance(Util.java:386)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:1054)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4187)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4119)
+	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2570)
+	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2731)
+	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2809)
+	at com.mysql.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1811)
+	at com.mysql.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1725)
+	at LeaderboardREST$5.handle(LeaderboardREST.java:717)
+	at spark.webserver.MatcherFilter.doFilter(MatcherFilter.java:139)
+	at spark.webserver.JettyHandler.doHandle(JettyHandler.java:54)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:179)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97)
+	at org.eclipse.jetty.server.Server.handle(Server.java:451)
+	at org.eclipse.jetty.server.HttpChannel.run(HttpChannel.java:252)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:266)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:240)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:596)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:527)
+	at java.lang.Thread.run(Unknown Source)
+
+Jul 02, 2014 5:27:45 PM LeaderboardREST$5 handle
+SEVERE: Table 'game42' already exists
+com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'game42' already exists
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(Unknown Source)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)
+	at java.lang.reflect.Constructor.newInstance(Unknown Source)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:411)
+	at com.mysql.jdbc.Util.getInstance(Util.java:386)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:1054)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4187)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4119)
+	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2570)
+	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2731)
+	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2809)
+	at com.mysql.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1811)
+	at com.mysql.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1725)
+	at LeaderboardREST$5.handle(LeaderboardREST.java:728)
+	at spark.webserver.MatcherFilter.doFilter(MatcherFilter.java:139)
+	at spark.webserver.JettyHandler.doHandle(JettyHandler.java:54)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:179)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97)
+	at org.eclipse.jetty.server.Server.handle(Server.java:451)
+	at org.eclipse.jetty.server.HttpChannel.run(HttpChannel.java:252)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:266)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:240)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:596)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:527)
+	at java.lang.Thread.run(Unknown Source)
+
+Jul 02, 2014 5:28:20 PM LeaderboardREST main
+INFO: My first log
+Jul 02, 2014 5:28:20 PM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////
+Jul 02, 2014 5:28:57 PM LeaderboardREST$6 handle
+SEVERE: Unknown table 'mygame.game42'
+com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown table 'mygame.game42'
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(Unknown Source)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)
+	at java.lang.reflect.Constructor.newInstance(Unknown Source)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:411)
+	at com.mysql.jdbc.Util.getInstance(Util.java:386)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:1054)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4187)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4119)
+	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2570)
+	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2731)
+	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2809)
+	at com.mysql.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1811)
+	at com.mysql.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1725)
+	at LeaderboardREST$6.handle(LeaderboardREST.java:786)
+	at spark.webserver.MatcherFilter.doFilter(MatcherFilter.java:139)
+	at spark.webserver.JettyHandler.doHandle(JettyHandler.java:54)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:179)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:136)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97)
+	at org.eclipse.jetty.server.Server.handle(Server.java:451)
+	at org.eclipse.jetty.server.HttpChannel.run(HttpChannel.java:252)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:266)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.run(AbstractConnection.java:240)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:596)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:527)
+	at java.lang.Thread.run(Unknown Source)
+

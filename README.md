@@ -24,22 +24,37 @@ and http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard
 
         CREATE DATABASE mygame
 
-3. Create a table called '$options':
+3. Create a file config.properties, here is an example:
+```
+# escape the characters #, !, =, and : with a preceding backslash
+
+# (local) address of database
+url = jdbc\:mysql\://localhost\:3306/mygame
+
+# database user/password
+user = root
+password = secret123
+
+# logfile is optional
+logfile = log.txt
+```
+
+4. Create a table called '$options':
 
 		CREATE TABLE mygame.$options (
 			game varchar(30),
 			maxEntries INT,
 			onlyKeepBestEntry TINYINT
+			socialnetwork varchar(50)
 		);
 
-4. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
+5. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
 		
         CREATE TABLE mygame.<gameID> (
             highscore int(11),
             playerID VARCHAR(30),
 			userData blob
         );
-
 
 #### Server
 
