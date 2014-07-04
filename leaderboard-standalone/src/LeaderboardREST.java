@@ -333,10 +333,11 @@ System.out.println();
 				if (!onlyKeepBestEntry) {
 					//st = con.createStatement();
 					//String updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
-//System.out.println(updstr);
-//System.out.println();
 //					st.executeUpdate(updstr);
-					PreparedStatement pst = con.prepareStatement("INSERT INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");");
+					String updstr = "INSERT INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");";
+System.out.println(updstr);
+System.out.println();
+					PreparedStatement pst = con.prepareStatement(updstr);
 					pst.setString(1, playerID);
 					if (userData!=null) pst.setBytes(2, userData);
 					pst.executeUpdate();
@@ -363,10 +364,11 @@ System.out.println("new high score: " + newHighScore);
 					if (!exists || (newHighScore > currentBestScore)) {
 //						st = con.createStatement();
 //						String updstr = "REPLACE INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
-//System.out.println(updstr);
-//System.out.println();
 //						st.executeUpdate(updstr);
-						PreparedStatement pst = con.prepareStatement("REPLACE INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");");
+						String updstr = "REPLACE INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");";
+System.out.println(updstr);
+System.out.println();
+						PreparedStatement pst = con.prepareStatement(updstr);
 						pst.setString(1, playerID);
 						if (userData!=null) pst.setBytes(2, userData);
 						pst.executeUpdate();
@@ -592,12 +594,13 @@ System.out.println();
 						if (rs.getObject(i) != null) {
 							if (!firstOutpCol) result.append(',');
 							String column = rsmd.getColumnName(i);
-							Object value;
+							String value;
 							if (!column.equals("userData")) {
 								value = rs.getString(i);
 							} else {
 								Blob blob = rs.getBlob(i);
-								value = Base64.encodeBase64(blob.getBytes(1, (int) blob.length()));
+								value = Base64.encodeBase64String(blob.getBytes(1, (int) blob.length()));
+								//value = Base64.encodeBase64String(rs.getBytes(i)); // this is supposed to be slower than using getBlob
 							}
 							result.append('\"');
 							result.append(column);

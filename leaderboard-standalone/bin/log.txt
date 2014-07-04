@@ -1462,3 +1462,7 @@ Jul 03, 2014 4:29:09 PM LeaderboardREST main
 INFO: My first log
 Jul 03, 2014 4:29:09 PM LeaderboardREST main
 INFO: //////////// LeaderboardREST server started /////////////
+Jul 04, 2014 11:59:22 AM LeaderboardREST main
+INFO: My first log
+Jul 04, 2014 11:59:22 AM LeaderboardREST main
+INFO: //////////// LeaderboardREST server started /////////////

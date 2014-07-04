@@ -21,9 +21,9 @@ function submitScore(gameID, playerID, score) {
 		data: JSON.stringify({
 				scoreEntries: [
 					{name:"highscore", value:score}
-				]
+				],
 				//authentication: ...,
-				//userData: ...
+				userData: "VGhpcyBpcyBhIHRlc3QgY29tbWVudC4="
 			}),
 		processData: false,
 		type: 'POST',
@@ -50,7 +50,7 @@ function getRankedList(gameID) {
 	$.get(rstr, {}, null, "jsonp").done(function(data) {
 		var txt = "<table>";
 		for (var i=0; i<data.length; i++) {
-			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td></tr>";
+			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td><td>userData: <pre>"+data[i].userData+"</pre></td></tr>";
 		}
 		txt += "</table>";
 		document.getElementById("rankedlist").innerHTML = txt;
