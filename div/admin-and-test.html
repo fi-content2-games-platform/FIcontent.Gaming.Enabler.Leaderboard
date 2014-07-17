@@ -14,8 +14,17 @@ div.group {
 //var url = "http://localhost:4567/lb/";
 var url = "http://130.206.83.3:4567/lb/";
 
+function utf8_to_b64( str ) {
+    return window.btoa(encodeURIComponent( escape( str )));
+}
+
+function b64_to_utf8( str ) {
+    return unescape(decodeURIComponent(window.atob( str )));
+}
+
 function submitScore(gameID, playerID, score) {
 	var pstr = url + gameID + "/" + playerID + "/score";
+	var userDataBase64 = utf8_to_b64(document.getElementById('userData').value);
 	$.ajax({
 		url: pstr,
 		data: JSON.stringify({
@@ -23,7 +32,7 @@ function submitScore(gameID, playerID, score) {
 					{name:"highscore", value:score}
 				],
 				//authentication: ...,
-				userData: "VGhpcyBpcyBhIHRlc3QgY29tbWVudC4="
+				userData: userDataBase64 // base64 encoded, e.g. "VGhpcyBpcyBhIHRlc3QgY29tbWVudC4="
 			}),
 		processData: false,
 		type: 'POST',
@@ -50,7 +59,7 @@ function getRankedList(gameID) {
 	$.get(rstr, {}, null, "jsonp").done(function(data) {
 		var txt = "<table>";
 		for (var i=0; i<data.length; i++) {
-			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td><td>userData: <pre>"+data[i].userData+"</pre></td></tr>";
+			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td><td>userData: <pre>"+b64_to_utf8(data[i].userData)+"</pre></td></tr>";
 		}
 		txt += "</table>";
 		document.getElementById("rankedlist").innerHTML = txt;
@@ -110,6 +119,7 @@ user's highest score: <span id="highestScore">-</span> <button type="button" onc
 <div class="group">
 	<i>post score options:</i><br>
 	highscore <input type="text" id="myScore" value="2"><br>
+	user data <input type="text" id="userData" value=""><br>
 	<button type="button" onclick="submitScore(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value, document.getElementById('myScore').value)">post score</button>(uses player ID from text field above)
 </div>
 <p>
