@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+//import java.util.Date;
+import java.util.Calendar;
 
 // mysql
 import java.sql.Connection;
@@ -110,8 +112,13 @@ System.out.println("--> to Social Network: " + gameID + " " + playerID + " " + n
 			//con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 			con.setRequestProperty("Content-Type", "application/json");
 
+			Calendar calendar = Calendar.getInstance();
+			java.util.Date now = calendar.getTime();
+			long timestamp = calendar.getTimeInMillis();
+
 			String requestBody = "{\n"
 				+ " \"_id\":\"doc_id_" + gameID + "_" + newHighScore + "\",\n"
+				+ " \"created\":" + timestamp + ",\n"
 				+ " \"msg\":\"new highscore: " + newHighScore + " points in game " + gameID + " by player " + playerID + "!\",\n"
 				+ " \"user\":{\"id\":\"0815\",\"name\":\"Leaderboard Server\"},\"type\":\"POST\"\n"
 				+ "}";
