@@ -14,17 +14,31 @@ div.group {
 //var url = "http://localhost:4567/lb/";
 var url = "http://130.206.83.3:4567/lb/";
 
-function utf8_to_b64( str ) {
+function utf8_to_b64(str) {
     return window.btoa(encodeURIComponent( escape( str )));
 }
 
-function b64_to_utf8( str ) {
+function b64_to_utf8(str) {
+	if (!str) return "";
     return unescape(decodeURIComponent(window.atob( str )));
+}
+
+$(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
+	document.getElementById("status").style.backgroundColor = ("red");
+	document.getElementById("status").innerHTML = "error: " + thrownError + "<br>response:" + jqXHR.responseText;
+});
+
+function setStatusOk(ok, str) {
+	document.getElementById("status").style.backgroundColor = (ok?"green":"yellow");
+	document.getElementById("status").innerHTML = "Message:" + str;
 }
 
 function submitScore(gameID, playerID, score) {
 	var pstr = url + gameID + "/" + playerID + "/score";
 	var userDataBase64 = utf8_to_b64(document.getElementById('userData').value);
+
+	setStatusOk(false, pstr);
+
 	$.ajax({
 		url: pstr,
 		data: JSON.stringify({
@@ -42,6 +56,7 @@ function submitScore(gameID, playerID, score) {
 
 function getRankingPos(gameID, playerID) {
 	var rstr = url + gameID + "/" + playerID + "/rankingposition";
+	setStatusOk(false, rstr);
 
 	$.get(rstr, {
 			//
@@ -55,8 +70,10 @@ function getRankingPos(gameID, playerID) {
 
 function getRankedList(gameID) {
 	var rstr = url + gameID + "/rankedlist";
+	setStatusOk(false, rstr);
 
-	$.get(rstr, {}, null, "jsonp").done(function(data) {
+	$.get(rstr, {}, null, "jsonp")
+	.done(function(data) {
 		var txt = "<table>";
 		for (var i=0; i<data.length; i++) {
 			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td><td>userData: <pre>"+b64_to_utf8(data[i].userData)+"</pre></td></tr>";
@@ -64,6 +81,10 @@ function getRankedList(gameID) {
 		txt += "</table>";
 		document.getElementById("rankedlist").innerHTML = txt;
 		//$('#rankedlist').html(txt);
+		setStatusOk(true, "ok");
+	})
+	.fail(function() {
+		setStatusOk(false, "fail");
 	});
 }
 
@@ -71,6 +92,7 @@ function createGame(gameID, maxEntries, onlyKeepBestEntry) {
 	var pstr = url + gameID;
 	var asn = document.getElementById("additionalScoreNames").value.split(",");
 	var snetw = document.getElementById("socialnetwork").value;
+	setStatusOk(false, pstr);
 
 	$.ajax({
 		url: pstr,
@@ -90,6 +112,7 @@ crossDomain: true,
 
 function deleteGame(gameID) {
 	var pstr = url + gameID;
+	setStatusOk(false, pstr);
 
 	$.ajax({
 		url: pstr,
@@ -97,6 +120,15 @@ function deleteGame(gameID) {
 		processData: false,
 		type: "DELETE",
 		contentType: 'text/plain', //'application/json',  cross site posting an application/json requires to implement the CORS preflight with OPTIONS, so this is a simple hacky workaround as the leaderboard server doesn't check the content-type
+
+success: function() {
+	setStatusOk(true, "ok");
+},
+error: function() {
+	setStatusOk(true, "fail");
+}
+
+
 	});
 }
 
@@ -125,7 +157,8 @@ user's highest score: <span id="highestScore">-</span> <button type="button" onc
 <p>
 <button type="button" onclick="getRankedList(document.getElementById('myGameID').value)">show ranked list</button>
 </p>
-</form> 
+<div id="status">status</div>
+</form>
 <div id="rankedlist">-</div>
 
 </body>

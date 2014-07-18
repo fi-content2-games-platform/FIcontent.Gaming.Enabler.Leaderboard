@@ -1,5 +1,7 @@
 // leaderboard server with rest api, supporting json or jsonp
 
+import java.io.IOException;
+
 // rest server
 import static spark.Spark.*;
 import spark.*;
@@ -37,14 +39,10 @@ import com.eclipsesource.json.ParseException;
 import org.apache.commons.codec.binary.Base64;
 import java.util.Arrays;
 
-// configuration file
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
 public class LeaderboardREST {
 	public static final boolean DEBUG = true;
 
+	static ServerSettings settings;
 
 	static String configFileName = "config.properties";
 	static Logger logger;
@@ -94,39 +92,16 @@ public class LeaderboardREST {
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	public static void main(String[] args) {
-		Properties prop = new Properties();
-		//load a properties file
-		try {
-			prop.load(new FileInputStream(configFileName));
-		} catch (IOException ex) {
-			System.out.println("error reading config file: " + configFileName);
-			return;
-		}
-
-		//get the property values and print them
-		final String url = prop.getProperty("url"); // jdbc:mysql://localhost:3306/mygame";
-		final String user = prop.getProperty("user");
-		final String password = prop.getProperty("password");
-		final String logfile = prop.getProperty("logfile");
-		//final String socialnetwork = prop.getProperty("socialnetwork");
-		if (DEBUG) {
-			System.out.println("read these config values:");
-			System.out.println("url: " + url);
-			System.out.println("user: " + user);
-			System.out.println("password: " + password);
-			System.out.println("logfile: " + logfile);
-			//System.out.println("socialnetwork: " + socialnetwork);
-		}
-
+		settings = new ServerSettings(configFileName);
 		///////////////////
 
 		// init logger (to file)
 		logger = Logger.getLogger("MyLog");  
 		FileHandler fh;  
 
-		if (logfile != null) try {
+		if (settings.logfile != null) try {
 			// This block configure the logger with handler and formatter
-			fh = new FileHandler(logfile, 100000, 1, true);
+			fh = new FileHandler(settings.logfile, 100000, 1, true);
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();
 			fh.setFormatter(formatter);
@@ -197,13 +172,9 @@ public class LeaderboardREST {
 					values += nValue;
 					if (nName.equals("highscore")) newHighScore = nValue;
 				}
-				//JsonObject authObj = requestObj.get("authentication").asObject();
-//				if (!requestObj.isNull("userData")) {
-JsonValue userDataBase64 = requestObj.get("userData");					
-if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString().getBytes()); // decode base64 to binary
-//				}
-				//BASE64Decoder decoder = new BASE64Decoder();
-				//userData = decoder.decodeBuffer(requestObj.get("userData").asString().getBytes());
+
+				JsonValue userDataBase64 = requestObj.get("userData");					
+				if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString().getBytes()); // decode base64 to binary
 
 			} catch (ParseException ex) {
 				System.out.println("JSON parse exception: " + ex.getMessage());
@@ -239,34 +210,18 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 
 			String socialnetwork = null;
 			try {
-				//// read options from $options table
-				con = DriverManager.getConnection(url, user, password);
-				st = con.createStatement();
-				boolean onlyKeepBestEntry = false;
-				int maxEntries = 0;
-				String qustr = "SELECT * FROM mygame.$options WHERE game = \'" + gameID + "\';";
-				if (DEBUG) System.out.println(qustr + "\n");
-				rs = st.executeQuery(qustr);
-				ResultSetMetaData rsmd = rs.getMetaData();
-				//int columnCount = rsmd.getColumnCount();
-				if (rs.next()) { // only first position
-					maxEntries = rs.getInt("maxEntries");
-					onlyKeepBestEntry = rs.getBoolean("onlyKeepBestEntry");
-					socialnetwork = rs.getString("socialnetwork");
-				}
-				if (DEBUG) {
-					System.out.println("socialnetwork: " + socialnetwork);
-					System.out.println(result.toString() + "\n");
-				}
-				//// end read options from database
+				con = DriverManager.getConnection(settings.url, settings.user, settings.password);
+
+				// read options from $options table
+				GameOptions options = GameOptions.getGameOptions(gameID, con);
 
 				/////// get previous best player id
-				if (socialnetwork != null) {
+				if (options.getSocialNetwork() != null) {
 					st = con.createStatement();
-					qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+					String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
 					if (DEBUG) System.out.println(qustr + "\n");
 					rs = st.executeQuery(qustr);
-					rsmd = rs.getMetaData();
+					ResultSetMetaData rsmd = rs.getMetaData();
 					if (rs.next()) { // only first position
 						prevBestPlayerID = rs.getString(1);
 					}
@@ -274,10 +229,7 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 				/////// end get previous best player id
 
 				//con = DriverManager.getConnection(url, user, password);
-				if (!onlyKeepBestEntry) {
-					//st = con.createStatement();
-					//String updstr = "INSERT INTO mygame." + gameID + " (playerID," + names + ") VALUES (\'" + playerID + "\'," + values + ");";
-//					st.executeUpdate(updstr);
+				if (!options.getOnlyKeepBestEntry()) {
 					String updstr = "INSERT INTO mygame." + gameID + " (playerID," + ((userData!=null)?"userData,":"") + names + ") VALUES (?," + ((userData!=null)?"?,":"") + values + ");";
 					if (DEBUG) System.out.println(updstr + "\n");
 					PreparedStatement pst = con.prepareStatement(updstr);
@@ -286,12 +238,12 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 					pst.executeUpdate();
 				} else {
 					//// test if exists and which value
-					con = DriverManager.getConnection(url, user, password);
+					con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 					st = con.createStatement();
-					qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = \'" + playerID + "\';";
+					String qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = \'" + playerID + "\';";
 					if (DEBUG) System.out.println(qustr + "\n");
 					rs = st.executeQuery(qustr);
-					rsmd = rs.getMetaData();
+					ResultSetMetaData rsmd = rs.getMetaData();
 					boolean exists = false;
 					int currentBestScore = 0;
 					if (rs.next()) { // only first position
@@ -322,14 +274,13 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 				////
 				// delete entries if too many
 				//delete from TableName where entityID not in (select top 1000 entityID from TableName)
-				if (maxEntries > 0) {
+				if (options.getMaxEntries() > 0) {
 					st = con.createStatement();
 					//get highscore of entry number maxEntries
-					//qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = \'" + playerID + "\';";
-					qustr = "SELECT highscore FROM mygame." + gameID + " ORDER by highscore DESC limit " + maxEntries + ",1;";
+					String qustr = "SELECT highscore FROM mygame." + gameID + " ORDER by highscore DESC limit " + options.getMaxEntries() + ",1;";
 					if (DEBUG) System.out.println(qustr + "\n");
 					rs = st.executeQuery(qustr);
-					rsmd = rs.getMetaData();
+					ResultSetMetaData rsmd = rs.getMetaData();
 					boolean exists = false;
 					int score = 0;
 					if (rs.next()) { // only first position
@@ -349,12 +300,12 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 				////
 
 				/////// get new best player id
-				if (socialnetwork != null) {
+				if (options.getSocialNetwork() != null) {
 					st = con.createStatement();
-					qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+					String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
 					if (DEBUG) System.out.println(qustr + "\n");
 					rs = st.executeQuery(qustr);
-					rsmd = rs.getMetaData();
+					ResultSetMetaData rsmd = rs.getMetaData();
 					if (rs.next()) { // only first position
 						newBestPlayerID = rs.getString(1);
 					}
@@ -422,11 +373,9 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 			}
 
 			try {
-				con = DriverManager.getConnection(url, user, password);
-
+				con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 				st = con.createStatement();
 
-				//String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + "." + orderBy + (higherIsBetter?" DESC":"") +") x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
 				String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + "." + orderBy + " DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
 				if (DEBUG) System.out.println(qustr + "\n");
 
@@ -510,7 +459,7 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 			}
 
 			try {
-				con = DriverManager.getConnection(url, user, password);
+				con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 
 				String qustr = "SELECT * FROM mygame." + gameID + " ORDER BY " + orderBy + " DESC" + ((rankStart+rankEnd > 0) ? (" LIMIT " + rankStart + "," + rankEnd) : "") + ";";
 				if (DEBUG) System.out.println(qustr + "\n");
@@ -559,48 +508,6 @@ if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString
 
 				if (DEBUG) System.out.println(result.toString() + "\n");
 
-/*
-    switch( rsmd.getColumnType( i ) ) {
-      case java.sql.Types.ARRAY:
-        obj.put(column_name, rs.getArray(column_name));     break;
-      case java.sql.Types.BIGINT:
-        obj.put(column_name, rs.getInt(column_name));       break;
-      case java.sql.Types.BOOLEAN:
-        obj.put(column_name, rs.getBoolean(column_name));   break;
-      case java.sql.Types.BLOB:
-        obj.put(column_name, rs.getBlob(column_name));      break;
-      case java.sql.Types.DOUBLE:
-        obj.put(column_name, rs.getDouble(column_name));    break;
-      case java.sql.Types.FLOAT:
-        obj.put(column_name, rs.getFloat(column_name));     break;
-      case java.sql.Types.INTEGER:
-        obj.put(column_name, rs.getInt(column_name));       break;
-      case java.sql.Types.NVARCHAR:
-        obj.put(column_name, rs.getNString(column_name));   break;
-      case java.sql.Types.VARCHAR:
-        obj.put(column_name, rs.getString(column_name));    break;
-      case java.sql.Types.TINYINT:
-        obj.put(column_name, rs.getInt(column_name));       break;
-      case java.sql.Types.SMALLINT:
-        obj.put(column_name, rs.getInt(column_name));       break;
-      case java.sql.Types.DATE:
-        obj.put(column_name, rs.getDate(column_name));      break;
-      case java.sql.Types.TIMESTAMP:
-        obj.put(column_name, rs.getTimestamp(column_name)); break;
-      default:
-        obj.put(column_name, rs.getObject(column_name));    break;
-    }*/
-
-/*
-JSON example output:
-
-[
-  {"playerID":"2", "score":"300"},
-  {"playerID":"3", "score":"800"},
-  {"playerID":"4", "score":"600"}
-]
-
-*/
 			} catch (SQLException ex) {
 				response.status(503); // 503 Service Unavailable
 				logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -670,21 +577,21 @@ JSON example output:
 			}
 
 			try {
-				con = DriverManager.getConnection(url, user, password);
+				con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 				st = con.createStatement();
 
 				String updstr = "CREATE TABLE mygame." + gameID + " (playerID varchar(20) DEFAULT NULL" + (onlyKeepBestEntry?" UNIQUE KEY":"") + ", " + highScoreNames + "userData blob);";
 				if (DEBUG) System.out.println(updstr + "\n");
 				st.executeUpdate(updstr);
 
-//// add entry to $options
+				//// add entry to $options
 				PreparedStatement pst = con.prepareStatement("INSERT INTO mygame.$options (game, maxEntries, onlyKeepBestEntry, socialnetwork) VALUES (?, ?, ?, ?);");
 				pst.setString(1, gameID);
 				pst.setInt(2, maxEntries);
 				pst.setInt(3, onlyKeepBestEntry?1:0 );
 				pst.setString(4, socialnetwork);
 				pst.executeUpdate();
-////
+				//// end add entry to $options
 
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
@@ -719,7 +626,7 @@ JSON example output:
 			String callback = request.queryParams("callback");
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
-System.out.println(gameID);
+			if (DEBUG) System.out.println(gameID);
 
 			Connection con = null;
 			Statement st = null;
@@ -733,26 +640,22 @@ System.out.println(gameID);
 			}
 
 			try {
-				con = DriverManager.getConnection(url, user, password);
+				con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 
 				st = con.createStatement();
 
 				String updstr = "DROP TABLE mygame." + gameID;
-System.out.println(updstr);
-System.out.println();
+				if (DEBUG) System.out.println(updstr + "\n");
 
 				st.executeUpdate(updstr);
 
 
-//// delete entry from $options
+				//// delete entry from $options
 				st = con.createStatement();
 				updstr = "DELETE FROM mygame.$options where game = \'" + gameID + "\';";
-System.out.println(updstr);
-System.out.println();
+				if (DEBUG) System.out.println(updstr + "\n");
 				st.executeUpdate(updstr);
-////
-
-
+				//// end delete from $options
 
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
