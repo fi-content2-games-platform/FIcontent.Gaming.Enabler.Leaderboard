@@ -135,6 +135,8 @@ public class LeaderboardREST {
       post(new Route("/lb/:gameID/:playerID/score") {
          @Override
          public Object handle(Request request, Response response) {
+			response.header("Access-Control-Allow-Origin", "*");
+
 			String callback = request.queryParams("callback");
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
@@ -540,6 +542,8 @@ public class LeaderboardREST {
       put(new Route("/lb/:gameID") {
          @Override
          public Object handle(Request request, Response response) {
+			response.header("Access-Control-Allow-Origin", "*");
+
 			String callback = request.queryParams("callback");
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
@@ -623,6 +627,8 @@ public class LeaderboardREST {
       delete(new Route("/lb/:gameID") {
          @Override
          public Object handle(Request request, Response response) {
+			response.header("Access-Control-Allow-Origin", "*");
+
 			String callback = request.queryParams("callback");
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
