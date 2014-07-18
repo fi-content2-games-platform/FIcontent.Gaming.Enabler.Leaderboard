@@ -25,7 +25,7 @@ function b64_to_utf8(str) {
 
 $(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
 	document.getElementById("status").style.backgroundColor = ("red");
-	document.getElementById("status").innerHTML = "error: " + thrownError + "<br>response:" + jqXHR.responseText;
+	document.getElementById("status").innerHTML = "error message: " + thrownError + "<br>response:" + jqXHR.responseText;
 });
 
 function setStatusOk(ok, str) {
