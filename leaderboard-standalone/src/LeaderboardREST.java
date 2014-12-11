@@ -22,6 +22,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+// read info from identity mangager through html/url
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
 // json
 //import com.google.gson.Gson;
 //import com.google.gson.JsonArray;
@@ -82,7 +93,9 @@ public class LeaderboardREST {
 			if (   ((ch >= 'a') && (ch <= 'z')) // be very careful when changing this! besides ',\,; there are also comment charaters etc.
 				|| ((ch >= 'A') && (ch <= 'Z'))
 				|| ((ch >= '0') && (ch <= '9'))
-				|| (ch == '.') || (ch == ' ') )
+				|| (ch == '.') || (ch == ' ')
+				|| (ch == '@') || (ch == '_')
+				|| (ch == '-') )
 			res.append(ch);
 		}
 
@@ -229,6 +242,61 @@ public class LeaderboardREST {
 					}
 				}
 				/////// end get previous best player id
+
+				/////// update $users table
+
+				// get user image url
+				String imgURL = null;
+				// filab
+				if (playerID.endsWith("@filab")) {
+					// download user info website
+					String userName = playerID.substring(0, playerID.length()-6);
+					String addr = "https://account.lab.fi-ware.org/users/" + userName;
+					if (DEBUG) System.out.println("getting user info from: " + addr);
+					try {
+						URL url = new URL(addr);
+						URLConnection conn = url.openConnection();
+						// open the stream and put it into BufferedReader
+						BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+						// parse html and extract image URL
+						String line;
+						String imgUrlBefore = "<img alt=\"" + userName + "\" src=\"";
+						String imgUrlAfter = "\"";
+						if (DEBUG) System.out.println("looking for something like " + imgUrlBefore + " ... " + imgUrlAfter);
+						while ((line = br.readLine()) != null) {
+//if (DEBUG) System.out.println(line);
+							int si, ei;
+System.out.println(line.indexOf(imgUrlBefore));
+							if ((si = line.indexOf(imgUrlBefore)) >= 0) {
+si += imgUrlBefore.length();
+System.out.println("found first!");
+System.out.println(line.indexOf(imgUrlAfter, si));
+								if ((ei = line.indexOf(imgUrlAfter, si)) >= 0) {
+System.out.println("found second!");
+									imgURL = "https://account.lab.fi-ware.org" + line.substring(si, ei);
+									if (DEBUG) System.out.println("found imgURL: " + imgURL);
+								}
+							}
+						}
+						br.close();
+						System.out.println("Done");
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					// end download user info website
+				}
+
+				// now do actual update of $users table
+				if (imgURL!=null && !imgURL.isEmpty()) {
+					String updstr = "INSERT INTO mygame.$users (playerID, imgURL) VALUES (\"" + playerID + "\",?) ON DUPLICATE KEY UPDATE imgURL = VALUES(imgURL);";
+					if (DEBUG) System.out.println(updstr + "\n");
+					PreparedStatement pst = con.prepareStatement(updstr);
+					pst.setString(1, imgURL);
+					pst.executeUpdate();
+				}
+				/////// end update $users table
 
 				//con = DriverManager.getConnection(url, user, password);
 				if (!options.getOnlyKeepBestEntry()) {
@@ -478,6 +546,7 @@ public class LeaderboardREST {
 					if (!firstRow) result.append(',');
 					result.append('{');
 					boolean firstOutpCol = true;
+					String playerID = null;
 					for (int i=1; i<=columnCount; i++) {
 						if (rs.getObject(i) != null) {
 							if (!firstOutpCol) result.append(',');
@@ -495,9 +564,70 @@ public class LeaderboardREST {
 							result.append("\":\"");
 							result.append(value);
 							result.append('\"');
+
+							if (column.equals("playerID")) { // for user info/thumbnail
+								playerID = value;
+							}
+
 							firstOutpCol = false;
 						}
 					}
+
+					// user info/thumbnail
+					if (playerID!=null && playerID.contains("@")) { // this check is for speed optimization and may not work if data is coming from somewhere else than filab?
+						// check $users database
+						String qustr2 = "SELECT * FROM mygame.$users WHERE playerID=\"" + playerID + "\";";
+						if (DEBUG) System.out.println(qustr2 + "\n");
+
+						Connection con2 = null;
+						Statement st2 = null;
+						ResultSet rs2 = null;
+						try {
+							con2 = DriverManager.getConnection(settings.url, settings.user, settings.password);
+							st2 = con2.createStatement();
+							rs2 = st2.executeQuery(qustr2);
+
+							ResultSetMetaData rsmd2 = rs2.getMetaData();
+							int columnCount2 = rsmd2.getColumnCount();
+
+							if (rs2.next()) {
+								for (int i2=1; i2<=columnCount2; i2++) {
+									if (rs2.getObject(i2) != null) {
+										result.append(',');
+										String column2 = rsmd2.getColumnName(i2);
+										String value2 = rs2.getString(i2);
+										result.append('\"');
+										result.append(column2);
+										result.append("\":\"");
+										result.append(value2);
+										result.append('\"');
+									}
+								}
+							}
+						} catch (SQLException ex) {
+							response.status(503); // 503 Service Unavailable
+							logger.log(Level.SEVERE, ex.getMessage(), ex);
+			//			} catch (Exception e) {
+			//				response.status(503); // 503 Service Unavailable
+						} finally {
+							try {
+								if (rs2 != null) {
+									rs2.close();
+								}
+								if (st2 != null) {
+									st2.close();
+								}
+								if (con2 != null) {
+									con2.close();
+								}
+
+							} catch (SQLException ex) {
+								logger.log(Level.WARNING, ex.getMessage(), ex);
+							}
+						}
+					}
+					// end get user info/thumbnail
+
 					result.append('}');
 					firstRow = false;
 				}

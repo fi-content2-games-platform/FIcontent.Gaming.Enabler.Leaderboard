@@ -4,8 +4,8 @@
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' type="text/javascript"></script>
 <script type="text/javascript">
 
-//var url = "http://localhost:4567/lb/";
-var url = "http://130.206.83.3:4567/lb/";
+var url = "http://localhost:4567/lb/";
+//var url = "http://130.206.83.3:4567/lb/";
 
 function submitScore(gameID, playerID, score) {
 	var pstr = url + gameID + "/" + playerID + "/score";
@@ -43,7 +43,11 @@ function getRankedList(gameID) {
 	$.get(rstr, {}, null, "jsonp").done(function(data) {
 		var txt = "<table>";
 		for (var i=0; i<data.length; i++) {
-			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td></tr>";
+			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td>"
+			if (data[i].imgURL) {
+				txt += "<td><img src='" + data[i].imgURL + "' width='32'></td>";
+			}
+			txt += "</tr>";
 		}
 		txt += "</table>";
 		document.getElementById("rankedlist").innerHTML = txt;
@@ -80,6 +84,10 @@ function deleteGame(gameID) {
 </script>
 </head>
 <body>
+
+<script>
+document.write("Server: " + url + "<br>\n");
+</script>
 
 <form>
 game id: <input type="text" id="myGameID" value="game1"> <button type="button" onclick="createGame(document.getElementById('myGameID').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
