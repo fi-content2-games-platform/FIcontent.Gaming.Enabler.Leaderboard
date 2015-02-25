@@ -48,13 +48,20 @@ logfile = log.txt
 			socialnetwork varchar(50)
 		);
 
-5. Create highscore table for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
+5. Create highscore tables for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
 		
-        CREATE TABLE mygame.<gameID> (
-            highscore int(11),
-            playerID VARCHAR(30),
+		CREATE TABLE mygame.<gameID> (
+			highscore int(11),
+			playerID VARCHAR(30),
 			userData blob
-        );
+		);
+
+6. Optionally, create a table called '$users' to link with the FILab Identity Manager profile images:
+		
+		CREATE TABLE mygame.$users (
+			playerID varchar(30) UNIQUE,
+			imgURL varchar(140)
+		);
 
 #### Server
 
