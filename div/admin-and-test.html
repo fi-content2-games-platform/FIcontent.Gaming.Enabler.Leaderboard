@@ -86,7 +86,13 @@ function getRankedList(gameID) {
 	.done(function(data) {
 		var txt = "<table>";
 		for (var i=0; i<data.length; i++) {
-			txt += "<tr><td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td><td>userData: <pre>"+b64_to_utf8(data[i].userData)+"</pre></td></tr>";
+			txt += "<tr>";
+			txt += "<td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td>";
+			if (data[i].imgURL) {
+				txt += "<td><img src='" + data[i].imgURL + "' width='32'></td>";
+			}
+			txt += "<td>userData: <pre>"+b64_to_utf8(data[i].userData)+"</pre></td>";
+			txt += "</tr>";
 		}
 		txt += "</table>";
 		document.getElementById("rankedlist").innerHTML = txt;
