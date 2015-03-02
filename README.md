@@ -1,11 +1,13 @@
 leaderboard
 ===========
 
-leaderboard for a cloud service, written in java, as standalone and as smartfoxserver 2x extension, within FI-Content2
+a cloud service, written in java, as standalone and as smartfoxserver 2x extension, within <a href="http://mediafi.org">FI-Content2</a>. It allows to post and retrieve high scores of games.
 
-see http://mediafi.org
-and http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard
+API specification:
+http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard
 
+Example usage:
+http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerguide
 
 ## Setup server from standalone project
 
