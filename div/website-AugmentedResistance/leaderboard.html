@@ -5,22 +5,21 @@
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' type="text/javascript"></script>
 <script type="text/javascript">
 
-//var gameKey = "rJmQqUhG78USrGKjx";
-//var lBoardId = "1";
-
-function stripSpecialChars(org) {
-	return org.replace(/[|&;$%@"\'<>()+,]/g, "");
-}
-
+// retrieve list of highscores from server
 function getRankedList() {
-	$.get("http://130.206.83.3:4567/lb/AugmentedResistance/rankedlist",
+	$.get("http://130.206.83.3:4567/lb/augmentedresistance/rankedlist",
 		{},
 		null,
 		"jsonp").done(function(data) {
-			var txt = "<table><tr><th>Rank</th><th>Player</th><th>Score</th></tr>";
+		// put results in a table
+		var txt = "<table><tr><th>Rank</th><th>Player</th><th>Score</th></tr>";
 			for (var i=0; i<data.length; i++) {
-				txt += "<tr><td class='rank'>" + (i+1) + ".</td><td>" + data[i].playerID
-					+ "</td><td class='score'>" + data[i].highscore + "</td></tr>";
+				txt += "<tr><td class='rank'>" + (i+1) + ".</td><td>";
+				if (data[i].imgURL) {
+					txt += "<img src='" + data[i].imgURL + "' width='32'> ";
+				}
+				txt += data[i].playerID + "</td><td class='score'>"
+					+ data[i].highscore + "</td></tr>";
 			}
 			txt += "</table>";
 			document.getElementById("inner").innerHTML = txt;
@@ -29,6 +28,7 @@ function getRankedList() {
 		 
 </script>
 </head>
+
 <body onLoad="javascript:getRankedList();setInterval('getRankedList()', 10000);">
 
 <div id="header">
@@ -37,7 +37,6 @@ function getRankedList() {
 <img src="fic2-logo.png" alt="FI CONTENT2" id="logo">
 <div id="main">
 <div id="inner">the ranked list should be displayed here</div>
-<!--<div id="cimg"><img src="turret.png" alt="turret"></div>-->
 </div>
 
 </body>
