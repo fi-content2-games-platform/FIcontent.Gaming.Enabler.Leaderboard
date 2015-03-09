@@ -104,6 +104,27 @@ public class LeaderboardREST {
 
 	///////////////////////////////////////////////////////////////////////////////////////
 
+	// try to create necessary tables always (if they exist, this will be ignored)
+	public static void checkMySQLInitialized() {
+		Connection con = null;
+		Statement st = null;
+		try {
+			con = DriverManager.getConnection(settings.url, settings.user, settings.password);
+			st = con.createStatement();
+			String qustr = "CREATE DATABASE mygame;";
+			if (DEBUG) System.out.println(qustr + "\n");
+			st.executeUpdate(qustr);
+			qustr = "CREATE TABLE mygame.$options(game varchar(30),maxEntries INT,onlyKeepBestEntry TINYINT, socialnetwork varchar(50));";
+			if (DEBUG) System.out.println(qustr + "\n");
+			st.executeUpdate(qustr);
+			qustr = "CREATE TABLE mygame.$users(playerID varchar(30) UNIQUE,imgURL varchar(140));";
+			if (DEBUG) System.out.println(qustr + "\n");
+			st.executeUpdate(qustr);
+		} catch(SQLException se) {
+			se.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args) {
 		settings = new ServerSettings(configFileName);
 		///////////////////
@@ -127,6 +148,7 @@ public class LeaderboardREST {
 		}  
 
 		logger.info("//////////// LeaderboardREST server started /////////////");  
+		checkMySQLInitialized();
 
 	  // for browser (FireFox) cross origin resource sharing (CORS) to confirm that PUT and DELETE work, too
       options(new Route("/lb/:gameID") {
@@ -141,7 +163,6 @@ public class LeaderboardREST {
 			return ("");
 		}
 	  });
-
 
 	  /////////////////// post score ///////////////////
 

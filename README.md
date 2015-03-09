@@ -22,11 +22,7 @@ http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerg
 
 1. Install mysql server
 
-2. Create database for highscore tables with name `mygame`
-
-        CREATE DATABASE mygame
-
-3. Create a file config.properties, here is an example:
+2. Create a file config.properties, here is an example:
 	```
 	# escape the characters #, !, =, and : with a preceding backslash
 
@@ -41,30 +37,6 @@ http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerg
 	logfile = log.txt
 	```
 
-4. Create a table called '$options':
-
-		CREATE TABLE mygame.$options (
-			game varchar(30),
-			maxEntries INT,
-			onlyKeepBestEntry TINYINT
-			socialnetwork varchar(50)
-		);
-
-5. Create highscore tables for each game with specific game ID (`<gameID>` stands for your game ID) by the respective REST command or this mysql call:
-		
-		CREATE TABLE mygame.<gameID> (
-			highscore int(11),
-			playerID VARCHAR(30),
-			userData blob
-		);
-
-6. Optionally, create a table called '$users' to link with the FILab Identity Manager profile images:
-		
-		CREATE TABLE mygame.$users (
-			playerID varchar(30) UNIQUE,
-			imgURL varchar(140)
-		);
-
 #### Server
 
 1. Make sure you have java installed
@@ -73,8 +45,9 @@ http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerg
 
 3. Set up your classpath, i.e. 
 
-        set CLASSPATH=.;spark-0.9.9.4-SNAPSHOT.jar;jetty-webapp-7.3.0.v20110203.jar;log4j-1.2.14.jar;servlet-api-3.0.pre4.jar;slf4j-api-1.6.1.jar;slf4j-log4j12-1.6.1.jar;mysql-connector-java-5.1.18-bin.jar
-	
+	set CLASSPATH=.;spark-0.9.9.4-SNAPSHOT.jar;jetty-webapp-7.3.0.v20110203.jar;log4j-1.2.14.jar;servlet-api-3.0.pre4.jar;slf4j-api-1.6.1.jar;slf4j-log4j12-1.6.1.jar;mysql-connector-java-5.1.18-bin.jar
+	~~set CLASSPATH=commons-codec-1.9.jar;jetty-io-9.0.2.v20130417.jar;jetty-security-9.0.2.v20130417.jar;log4j-1.2.14.jar;jetty-http-9.0.2.v20130417.jar;jetty-servlet-9.0.2.v20130417.jar;jetty-xml-9.0.2.v20130417.jar;jetty-webapp-9.0.2.v20130417.jar;slf4j-log4j12-1.6.1.jar;mysql-connector-java-5.1.25-bin.jar;slf4j-api-1.6.1.jar;jetty-util-9.0.2.v20130417.jar;javax.servlet-3.0.0.v201112011016.jar;spark-core-1.1.1.jar;com.eclipsesource.json_2013-10-22.jar;jetty-server-9.0.2.v20130417.jar;slf4j-api-1.7.2.jar;mysql-connector-java-5.1.25-bin.jar;gson-2.2.4.jar;com.eclipsesource.json_2013-10-22.jar;.~~
+
 4. Compile
 
         javac LeaderboardREST.java
