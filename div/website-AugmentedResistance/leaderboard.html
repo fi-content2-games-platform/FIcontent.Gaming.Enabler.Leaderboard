@@ -13,14 +13,18 @@ function stripSpecialChars(org) {
 }
 
 function getRankedList() {
-	$.get("http://130.206.83.3:4567/lb/AugmentedResistance/rankedlist",
+	$.get("http://130.206.83.3:4567/lb/augmentedresistance/rankedlist",
 		{},
 		null,
 		"jsonp").done(function(data) {
 			var txt = "<table><tr><th>Rank</th><th>Player</th><th>Score</th></tr>";
 			for (var i=0; i<data.length; i++) {
-				txt += "<tr><td class='rank'>" + (i+1) + ".</td><td>" + data[i].playerID
-					+ "</td><td class='score'>" + data[i].highscore + "</td></tr>";
+				txt += "<tr><td class='rank'>" + (i+1) + ".</td><td>";
+				if (data[i].imgURL) {
+					txt += "<img src='" + data[i].imgURL + "' width='32'> ";
+				}
+				txt += data[i].playerID + "</td><td class='score'>"
+					+ data[i].highscore + "</td></tr>";
 			}
 			txt += "</table>";
 			document.getElementById("inner").innerHTML = txt;
