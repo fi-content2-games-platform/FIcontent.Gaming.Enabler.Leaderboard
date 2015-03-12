@@ -209,7 +209,7 @@ public class LeaderboardREST {
 					if (nName.equals("highscore")) newHighScore = nValue;
 				}
 
-				JsonValue userDataBase64 = requestObj.get("userData");					
+				JsonValue userDataBase64 = requestObj.get("userData");
 				if (userDataBase64!=null) userData = Base64.decodeBase64(userDataBase64.asString().getBytes()); // decode base64 to binary
 
 			} catch (ParseException ex) {
@@ -702,21 +702,33 @@ System.out.println("found second!");
 
 			// read other parameters
 			String content = request.body();
-			JsonObject requestObj = JsonObject.readFrom(content);
+			JsonObject requestObj = (content.isEmpty()) ? null : JsonObject.readFrom(content);
 
-			int maxEntries = Integer.parseInt(requestObj.get("maxEntries").asString());
-			if (DEBUG) System.out.println(maxEntries);
-			boolean onlyKeepBestEntry = Boolean.parseBoolean(requestObj.get("onlyKeepBestEntry").asString());
-			if (DEBUG) System.out.println(onlyKeepBestEntry);
-			String socialnetwork = requestObj.get("socialnetwork").asString();
-			if (DEBUG) System.out.println(socialnetwork);
+			int maxEntries = 0;
+			boolean onlyKeepBestEntry = false;
+			String socialnetwork = "";
+			if (requestObj != null) {
+				JsonValue v = requestObj.get("maxEntries");
+				if (v != null) maxEntries = Integer.parseInt(v.asString());
+				if (DEBUG) System.out.println(maxEntries);
+				v = requestObj.get("onlyKeepBestEntry");
+				if (v != null) onlyKeepBestEntry = Boolean.parseBoolean(v.asString());
+				if (DEBUG) System.out.println(onlyKeepBestEntry);
+				v = requestObj.get("socialnetwork");
+				if (v != null) socialnetwork = v.asString();
+				if (DEBUG) System.out.println(socialnetwork);
+			}
 
 			String highScoreNames = "highscore int(11) DEFAULT NULL, ";
-			JsonArray scoresArr = requestObj.get("highScoreNames").asArray();
-			//JsonArray scoresArr = requestObj.getJSONArray("highScoreNames");
-			for (int i=0; i<scoresArr.size(); i++) {
-				String s = scoresArr.get(i).asString();
-				if (!s.isEmpty()) highScoreNames += toSafeString(s, 30) + " int(11) DEFAULT NULL, ";
+			if (requestObj != null) {
+				JsonValue v = requestObj.get("highScoreNames");
+				if (v != null) {JsonArray scoresArr = v.asArray();
+					//JsonArray scoresArr = requestObj.getJSONArray("highScoreNames");
+					for (int i=0; i<scoresArr.size(); i++) {
+						String s = scoresArr.get(i).asString();
+						if (!s.isEmpty()) highScoreNames += toSafeString(s, 30) + " int(11) DEFAULT NULL, ";
+					}
+				}
 			}
 			if (DEBUG) System.out.println(highScoreNames);
 
@@ -747,6 +759,11 @@ System.out.println("found second!");
 				pst.setString(4, socialnetwork);
 				pst.executeUpdate();
 				//// end add entry to $options
+
+				if (callback != null) {
+					result.append(callback);
+					result.append("(");
+				}
 
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
@@ -813,6 +830,11 @@ System.out.println("found second!");
 				if (DEBUG) System.out.println(updstr + "\n");
 				st.executeUpdate(updstr);
 				//// end delete from $options
+
+				if (callback != null) {
+					result.append(callback);
+					result.append("(");
+				}
 
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
