@@ -765,7 +765,7 @@ System.out.println("found second!");
 					result.append("(");
 				}
 
-				response.status(200); // 200 ok
+				response.status(201); // 204 success; no further content in answer
 			} catch (SQLException ex) {
 				response.status(503); // 503 Service Unavailable
 				logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -836,7 +836,7 @@ System.out.println("found second!");
 					result.append("(");
 				}
 
-				response.status(200); // 200 ok
+				response.status(204); // 204 success; no further content in answer
 			} catch (SQLException ex) {
 				response.status(503); // 503 Service Unavailable
 				logger.log(Level.SEVERE, ex.getMessage(), ex);
