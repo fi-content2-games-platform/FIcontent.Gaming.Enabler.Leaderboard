@@ -27,7 +27,7 @@ http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerg
 	# escape the characters #, !, =, and : with a preceding backslash
 
 	# (local) address of database
-	url = jdbc\:mysql\://localhost\:3306/mygame
+	url = jdbc\:mysql\://localhost\:3306/
 
 	# database user/password
 	user = root
