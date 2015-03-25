@@ -479,7 +479,7 @@ System.out.println("found second!");
 					String pos = rs.getString(1);
 					if (pos != null) {
 						response.status(200); // 200 ok
-						result.append("{position:");
+						result.append("{\"position\":");
 						result.append(pos);
 						result.append('}');
 					} else {
