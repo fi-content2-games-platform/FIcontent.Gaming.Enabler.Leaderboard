@@ -151,13 +151,28 @@ public class LeaderboardREST {
 		checkMySQLInitialized();
 
 	  // for browser (FireFox) cross origin resource sharing (CORS) to confirm that PUT and DELETE work, too
-      options(new Route("/lb/:gameID") {
+      //options(new Route("/lb/:gameID") {
+      options(new Route("/lb/*") {
          @Override
          public Object handle(Request request, Response response) {
 			if (DEBUG) System.out.println("OPTIONS");
 			response.header("Access-Control-Allow-Origin", "*");
 			response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-			response.header("Access-Control-Allow-Headers", "X-Requested-With");
+			//response.header("Access-Control-Allow-Headers", "X-Requested-With");
+			response.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, api_key, Authorization"); // for swagger??
+			response.header("Access-Control-Max-Age", "100");
+			response.status(204);
+			return ("");
+		}
+	  });
+      options(new Route("/lb/*/*") {
+         @Override
+         public Object handle(Request request, Response response) {
+			if (DEBUG) System.out.println("OPTIONS");
+			response.header("Access-Control-Allow-Origin", "*");
+			response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+			//response.header("Access-Control-Allow-Headers", "X-Requested-With");
+			response.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, api_key, Authorization"); // for swagger??
 			response.header("Access-Control-Max-Age", "100");
 			response.status(204);
 			return ("");
@@ -272,7 +287,7 @@ public class LeaderboardREST {
 				if (playerID.endsWith("@filab")) {
 					// download user info website
 					String userName = playerID.substring(0, playerID.length()-6);
-					String addr = "https://account.lab.fi-ware.org/users/" + userName;
+					String addr = "https://account.lab.fiware.org/users/" + userName;
 					if (DEBUG) System.out.println("getting user info from: " + addr);
 					try {
 						URL url = new URL(addr);
@@ -294,7 +309,7 @@ System.out.println("found first!");
 System.out.println(line.indexOf(imgUrlAfter, si));
 								if ((ei = line.indexOf(imgUrlAfter, si)) >= 0) {
 System.out.println("found second!");
-									imgURL = "https://account.lab.fi-ware.org" + line.substring(si, ei);
+									imgURL = "https://account.lab.fiware.org" + line.substring(si, ei);
 									if (DEBUG) System.out.println("found imgURL: " + imgURL);
 								}
 							}
