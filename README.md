@@ -11,6 +11,10 @@ http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerg
 
 ## Setup server from standalone project
 
+### Requirements
+The software was tested on Linux and Windows and should run on any platform supporting Java and MySQL.
+
+
 ### Required java libraries <a name="javalibs"></a>
 - Json library [minimal-json](https://github.com/ralfstx/minimal-json)
 - Micro web framework [Spark](http://www.sparkjava.com)
