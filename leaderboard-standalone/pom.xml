@@ -71,7 +71,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>fic2.leaderboard.LeaderboardREST</mainClass>
+							<mainClass>LeaderboardREST</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

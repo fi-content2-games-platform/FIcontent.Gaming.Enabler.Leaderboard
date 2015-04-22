@@ -1,0 +1,2 @@
+mysqld: /root/etc/mysqld-entrypoint.sh mysqld
+leaderboard: /root/etc/leaderboard-entrypoint.sh
