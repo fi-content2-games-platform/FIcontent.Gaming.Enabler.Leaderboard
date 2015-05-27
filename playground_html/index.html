@@ -3,9 +3,12 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <style>
 div.group {
-	background-color:#CCC;
+	background-color:#DDD;
 	margin:25px;
 	padding:6px;
+}
+.imp {
+	color:#F00;
 }
 </style>
 
@@ -172,30 +175,40 @@ function deleteGame(gameID) {
 </script>
 </head>
 <body>
+<h1>Leaderboard REST API demo</h1>
+<p>
+This page allows to call the Leaderboard functions by clicking on the buttons.
+</p>
 
 <form>
-game id: <input type="text" id="myGameID" value="game1">
-<div class="group">
-	<i>game table creation options:</i><br>
-	max entries: <input type="text" id="myMaxEntries" value="0"><br>
-	onlyKeepBestEntry: <input type="text" id="myOnlyKeepBestEntry" value="false"><br>
-	additionalScoreNames (sep. by commas): <input type="text" id="additionalScoreNames" value=""><br>
-	social network database URL: <input type="text" id="socialnetwork" value=""><br>
-	<button type="button" onclick="createGame(document.getElementById('myGameID').value, document.getElementById('myMaxEntries').value, document.getElementById('myOnlyKeepBestEntry').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
-</div>
-player ID: <input type="text" id="myPlayerID" value="?"><br>
-user's highest score: <span id="highestScore">-</span> <button type="button" onclick="getRankingPos(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value)">get/update</button> (uses player ID from text field above)<br>
-<div class="group">
-	<i>post score options:</i><br>
-	highscore <input type="text" id="myScore" value="2"><br>
-	user data <input type="text" id="userData" value=""><br>
-	<button type="button" onclick="submitScore(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value, document.getElementById('myScore').value)">post score</button>(uses player ID from text field above)
-</div>
+<h2>Show list of entries</h2>
+game ID: <input type="text" id="myGameID" value="game2">
 <p>
 <button type="button" onclick="getRankedList(document.getElementById('myGameID').value)">show ranked list</button>
+<span class="imp">[Click on this button to show the highscores for the game specified in <i>game ID</i>. The list appears below.]</span>
 </p>
-<div id="status">status</div>
+<h2>Create or remove a game table:</h2>
+<div class="group">
+	<i>game table creation options:</i>
+	Max entries: <input type="text" id="myMaxEntries" value="0"> <span>[Max. number of entries, 0 means unlimited.]</span><br>
+	onlyKeepBestEntry: <input type="text" id="myOnlyKeepBestEntry" value="false"> <span>[true or false, should only best score of player be shown?]</span><br>
+	additionalScoreNames (optional, sep. by commas): <input type="text" id="additionalScoreNames" value=""> <span>[Further columns, e.g. for time, achievements, etc.]</span><br>
+	social network database URL (optional): <input type="text" id="socialnetwork" value=""> <span>[For automatic posting of new highscore to the Social Network SE]</span><br><br>
+	<button type="button" onclick="createGame(document.getElementById('myGameID').value, document.getElementById('myMaxEntries').value, document.getElementById('myOnlyKeepBestEntry').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
+	<span class="imp">[Click on these buttons to create or delete the game with the name specified in <i>game ID</i>.]</span>
+</div>
+<h2>Post and retrieve highscore for a player</h2>
+player ID: <input type="text" id="myPlayerID" value="?"> <span>[enter a name of the player. Letters and numbers are allowed.]</span><br>
+user's highest score: <span id="highestScore">-</span> <button type="button" onclick="getRankingPos(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value)">get/update</button> <span class="imp">[click here to get highscore of player with <i>player ID</i>]</span><br>
+<div class="group">
+	<i>post score options:</i><br>
+	highscore <input type="text" id="myScore" value="2"> <span>[An integer number.]</span><br>
+	user data (optional) <input type="text" id="userData" value=""> <span>[Any additional information.]</span><br>
+	<button type="button" onclick="submitScore(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value, document.getElementById('myScore').value)">post score</button> <span class="imp">[Click here to post the new highscore for player with <i>player ID</i>]</span>
+</div>
+<div id="status">Status of last query:</div>
 </form>
+<h2>Highscore list</h2>
 <div id="rankedlist">-</div>
 
 </body>
