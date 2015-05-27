@@ -31,6 +31,7 @@ class ServerSettings {
 			System.out.println("user: " + user);
 			System.out.println("password: " + password);
 			System.out.println("logfile: " + logfile);
+                        System.out.flush();
 		}
 	}
 }
