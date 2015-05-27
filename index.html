@@ -1,0 +1,215 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+div.group {
+	background-color:#DDD;
+	margin:25px;
+	padding:6px;
+}
+.imp {
+	color:#F00;
+}
+</style>
+
+<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' type="text/javascript"></script>
+
+ <script>
+var url = "";
+
+$.ajax({
+	url: "config.json",
+	type: "GET",
+	dataType : 'json',
+	success: function (data) {
+		url = data.serverUrlAndPort; // get value from config.json
+	},
+	error: function (err) {
+		setStatusOk(false, "An error happened receiving the config.json");
+	}
+});
+</script>
+
+<script type="text/javascript">
+
+//var url = "http://localhost:4567/lb/";
+//var url = "http://130.206.83.3:4567/lb/";
+
+function utf8_to_b64(str) {
+    return window.btoa(encodeURIComponent( escape( str )));
+}
+
+function b64_to_utf8(str) {
+	if (!str) return "";
+    return unescape(decodeURIComponent(window.atob( str )));
+}
+
+$(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
+	document.getElementById("status").style.backgroundColor = ("red");
+	document.getElementById("status").innerHTML = "error message: " + thrownError + "<br>response:" + jqXHR.responseText;
+});
+
+function setStatusOk(ok, str) {
+	document.getElementById("status").style.backgroundColor = (ok?"green":"yellow");
+	document.getElementById("status").innerHTML = "Message:" + str;
+}
+
+function submitScore(gameID, playerID, score) {
+	var pstr = url + gameID + "/" + playerID + "/score";
+	var userDataBase64 = utf8_to_b64(document.getElementById('userData').value);
+
+	setStatusOk(false, pstr);
+
+	$.ajax({
+		url: pstr,
+		data: JSON.stringify({
+				scoreEntries: [
+					{name:"highscore", value:score}
+				],
+				//authentication: ...,
+				userData: userDataBase64 // base64 encoded, e.g. "VGhpcyBpcyBhIHRlc3QgY29tbWVudC4="
+			}),
+		processData: false,
+		type: 'POST',
+		contentType: 'text/plain', //'application/json',  cross site posting an application/json requires to implement the CORS preflight with OPTIONS, so this is a simple hacky workaround as the leaderboard server doesn't check the content-type
+	}).done(function(data) {
+		setStatusOk(true, "ok");
+	})
+	.fail(function() {
+		setStatusOk(false, "fail");
+	});
+}
+
+function getRankingPos(gameID, playerID) {
+	var rstr = url + gameID + "/" + playerID + "/rankingposition";
+	setStatusOk(false, rstr);
+
+	$.get(rstr, {
+			//
+		},
+		null,
+		"jsonp").done(function(data) {
+			var txt = "player position: " +  data.position;
+			document.getElementById("highestScore").innerHTML = txt;
+	}).done(function(data) {
+		setStatusOk(true, "ok");
+	})
+	.fail(function() {
+		setStatusOk(false, "fail");
+	});
+}
+
+function getRankedList(gameID) {
+	var rstr = url + gameID + "/rankedlist";
+	setStatusOk(false, rstr);
+
+	$.get(rstr, {}, null, "jsonp")
+	.done(function(data) {
+		var txt = "<table>";
+		for (var i=0; i<data.length; i++) {
+			txt += "<tr>";
+			txt += "<td>" + (i+1) + ".</td><td>" + data[i].highscore + " points </td><td>by: " + data[i].playerID + "</td>";
+			if (data[i].imgURL) {
+				txt += "<td><img src='" + data[i].imgURL + "' width='32'></td>";
+			}
+			txt += "<td>userData: <pre>"+b64_to_utf8(data[i].userData)+"</pre></td>";
+			txt += "</tr>";
+		}
+		txt += "</table>";
+		document.getElementById("rankedlist").innerHTML = txt;
+		//$('#rankedlist').html(txt);
+		setStatusOk(true, "ok");
+	})
+	.fail(function() {
+		setStatusOk(false, "fail");
+	});
+}
+
+function createGame(gameID, maxEntries, onlyKeepBestEntry) {
+	var pstr = url + gameID;
+	var asn = document.getElementById("additionalScoreNames").value.split(",");
+	var snetw = document.getElementById("socialnetwork").value;
+	setStatusOk(false, pstr);
+
+	$.ajax({
+		url: pstr,
+		data: JSON.stringify({
+				maxEntries: maxEntries,
+				onlyKeepBestEntry: onlyKeepBestEntry,
+				highScoreNames: asn,
+				socialnetwork: snetw
+			}),
+		processData: false,
+		type: "PUT",
+crossDomain: true,
+//dataType: "jsonp",
+		contentType: 'text/plain', //'application/json',  cross site posting an application/json requires to implement the CORS preflight with OPTIONS, so this is a simple hacky workaround as the leaderboard server doesn't check the content-type
+		success: function() {
+			setStatusOk(true, "ok");
+		},
+		error: function() {
+			setStatusOk(false, "fail");
+		}
+	});
+}
+
+function deleteGame(gameID) {
+	var pstr = url + gameID;
+	setStatusOk(false, pstr);
+
+	$.ajax({
+		url: pstr,
+		data: "",
+		processData: false,
+		type: "DELETE",
+		contentType: 'text/plain', //'application/json',  cross site posting an application/json requires to implement the CORS preflight with OPTIONS, so this is a simple hacky workaround as the leaderboard server doesn't check the content-type
+		success: function() {
+			setStatusOk(true, "ok");
+		},
+		error: function() {
+			setStatusOk(false, "fail");
+		}
+	});
+}
+
+</script>
+</head>
+<body>
+<h1>Leaderboard REST API demo</h1>
+<p>
+This page allows to call the Leaderboard functions by clicking on the buttons.
+</p>
+
+<form>
+<h2>Show list of entries</h2>
+game ID: <input type="text" id="myGameID" value="game2">
+<p>
+<button type="button" onclick="getRankedList(document.getElementById('myGameID').value)">show ranked list</button>
+<span class="imp">[Click on this button to show the highscores for the game specified in <i>game ID</i>. The list appears below.]</span>
+</p>
+<h2>Create or remove a game table:</h2>
+<div class="group">
+	<i>game table creation options:</i>
+	Max entries: <input type="text" id="myMaxEntries" value="0"> <span>[Max. number of entries, 0 means unlimited.]</span><br>
+	onlyKeepBestEntry: <input type="text" id="myOnlyKeepBestEntry" value="false"> <span>[true or false, should only best score of player be shown?]</span><br>
+	additionalScoreNames (optional, sep. by commas): <input type="text" id="additionalScoreNames" value=""> <span>[Further columns, e.g. for time, achievements, etc.]</span><br>
+	social network database URL (optional): <input type="text" id="socialnetwork" value=""> <span>[For automatic posting of new highscore to the Social Network SE]</span><br><br>
+	<button type="button" onclick="createGame(document.getElementById('myGameID').value, document.getElementById('myMaxEntries').value, document.getElementById('myOnlyKeepBestEntry').value);return false;" onsubmit="return false;">create new game in database</button> <button type="button" onclick="deleteGame(document.getElementById('myGameID').value)">delete game from database</button><br>
+	<span class="imp">[Click on these buttons to create or delete the game with the name specified in <i>game ID</i>.]</span>
+</div>
+<h2>Post and retrieve highscore for a player</h2>
+player ID: <input type="text" id="myPlayerID" value="?"> <span>[enter a name of the player. Letters and numbers are allowed.]</span><br>
+user's highest score: <span id="highestScore">-</span> <button type="button" onclick="getRankingPos(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value)">get/update</button> <span class="imp">[click here to get highscore of player with <i>player ID</i>]</span><br>
+<div class="group">
+	<i>post score options:</i><br>
+	highscore <input type="text" id="myScore" value="2"> <span>[An integer number.]</span><br>
+	user data (optional) <input type="text" id="userData" value=""> <span>[Any additional information.]</span><br>
+	<button type="button" onclick="submitScore(document.getElementById('myGameID').value, document.getElementById('myPlayerID').value, document.getElementById('myScore').value)">post score</button> <span class="imp">[Click here to post the new highscore for player with <i>player ID</i>]</span>
+</div>
+<div id="status">Status of last query:</div>
+</form>
+<h2>Highscore list</h2>
+<div id="rankedlist">-</div>
+
+</body>
+</html>
