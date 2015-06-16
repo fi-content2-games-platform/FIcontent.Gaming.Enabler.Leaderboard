@@ -125,6 +125,19 @@ public class LeaderboardREST {
 		}
 	}
 
+	// from https://yobriefca.se/blog/2014/02/20/spas-and-enabling-cors-in-spark/
+	// attach these headers to all request responses
+	private static void enableCORS(final String origin, final String methods, final String headers) {
+		before(new Filter() {
+			@Override
+			public void handle(Request request, Response response) {
+				response.header("Access-Control-Allow-Origin", origin);
+				response.header("Access-Control-Request-Method", methods);
+				response.header("Access-Control-Allow-Headers", headers);
+			}
+		});
+	}
+
 	public static void main(String[] args) {
 		settings = new ServerSettings(configFileName);
 		///////////////////
@@ -150,7 +163,23 @@ public class LeaderboardREST {
 		logger.info("//////////// LeaderboardREST server started /////////////");  
 		checkMySQLInitialized();
 
-	  // for browser (FireFox) cross origin resource sharing (CORS) to confirm that PUT and DELETE work, too
+
+
+		// for browser (FireFox) cross origin resource sharing (CORS)
+		enableCORS("*", "*", "*"); // allow everything
+		//enableCORS("*", "GET, POST, PUT, DELETE, OPTIONS", "X-Requested-With, Content-Type, api_key, Authorization");
+
+		options(new Route("/lb/*") {
+		@Override
+		public Object handle(Request request, Response response) {
+			if (DEBUG) System.out.println("OPTIONS");
+			response.status(204);
+			return ("");
+		}
+		});
+
+/*
+		// to confirm that PUT and DELETE work, too
       //options(new Route("/lb/:gameID") {
       options(new Route("/lb/*") {
          @Override
@@ -160,12 +189,12 @@ public class LeaderboardREST {
 			response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 			//response.header("Access-Control-Allow-Headers", "X-Requested-With");
 			response.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, api_key, Authorization"); // for swagger??
-			response.header("Access-Control-Max-Age", "100");
+			//response.header("Access-Control-Max-Age", "100");
 			response.status(204);
 			return ("");
 		}
 	  });
-      options(new Route("/lb/*/*") {
+      options(new Route("/lb/ * / *") {
          @Override
          public Object handle(Request request, Response response) {
 			if (DEBUG) System.out.println("OPTIONS");
@@ -178,6 +207,8 @@ public class LeaderboardREST {
 			return ("");
 		}
 	  });
+*/
+
 
 	  /////////////////// post score ///////////////////
 
@@ -417,6 +448,10 @@ System.out.println("found second!");
 					}
 				}
 				/////// end get new best player id
+
+				if (callback != null) {
+					result.append(");");
+				}
 
 				response.status(200); // 200 ok
 			} catch (SQLException ex) {
@@ -776,8 +811,7 @@ System.out.println("found second!");
 				//// end add entry to $options
 
 				if (callback != null) {
-					result.append(callback);
-					result.append("(");
+					result.append(");");
 				}
 
 				response.status(201); // 204 success; no further content in answer
@@ -847,8 +881,7 @@ System.out.println("found second!");
 				//// end delete from $options
 
 				if (callback != null) {
-					result.append(callback);
-					result.append("(");
+					result.append(");");
 				}
 
 				response.status(204); // 204 success; no further content in answer
