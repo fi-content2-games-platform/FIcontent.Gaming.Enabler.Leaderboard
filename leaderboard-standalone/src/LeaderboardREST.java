@@ -326,7 +326,7 @@ response.header("Access-Control-Allow-Headers", "*");
 				if (playerID.endsWith("@filab")) {
 					// download user info website
 					String userName = playerID.substring(0, playerID.length()-6);
-					String addr = "https://account.lab.fiware.org/users/" + userName;
+					String addr = "https://account.lab.fiware.org/idm/users/" + userName;
 					if (DEBUG) System.out.println("getting user info from: " + addr);
 					try {
 						URL url = new URL(addr);
@@ -335,15 +335,17 @@ response.header("Access-Control-Allow-Headers", "*");
 						BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 						// parse html and extract image URL
 						String line;
-						String imgUrlBefore = "<img alt=\"" + userName + "\" src=\"";
+						//String imgUrlBefore = "<img alt=\"" + userName + "\" src=\"";
+						String imgUrlBefore = "<img alt=\"User\" src=\"";
 						String imgUrlAfter = "\"";
 						if (DEBUG) System.out.println("looking for something like " + imgUrlBefore + " ... " + imgUrlAfter);
+//int lineNum = 0;
 						while ((line = br.readLine()) != null) {
+//lineNum++;
 //if (DEBUG) System.out.println(line);
 							int si, ei;
-System.out.println(line.indexOf(imgUrlBefore));
 							if ((si = line.indexOf(imgUrlBefore)) >= 0) {
-si += imgUrlBefore.length();
+								si += imgUrlBefore.length();
 System.out.println("found first!");
 System.out.println(line.indexOf(imgUrlAfter, si));
 								if ((ei = line.indexOf(imgUrlAfter, si)) >= 0) {
