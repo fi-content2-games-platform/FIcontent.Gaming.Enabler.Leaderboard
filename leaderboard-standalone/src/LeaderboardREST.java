@@ -125,6 +125,7 @@ public class LeaderboardREST {
 		}
 	}
 
+/* doesn't always work with spark1.1.1 : when sending "Accept: application/java" this filter is not executed (but should)
 	// from https://yobriefca.se/blog/2014/02/20/spas-and-enabling-cors-in-spark/
 	// attach these headers to all request responses
 	private static void enableCORS(final String origin, final String methods, final String headers) {
@@ -137,7 +138,7 @@ public class LeaderboardREST {
 			}
 		});
 	}
-
+*/
 	public static void main(String[] args) {
 		settings = new ServerSettings(configFileName);
 		///////////////////
@@ -166,13 +167,18 @@ public class LeaderboardREST {
 
 
 		// for browser (FireFox) cross origin resource sharing (CORS)
-		enableCORS("*", "*", "*"); // allow everything
+		//enableCORS("*", "*", "*"); // allow everything
 		//enableCORS("*", "GET, POST, PUT, DELETE, OPTIONS", "X-Requested-With, Content-Type, api_key, Authorization");
 
 		options(new Route("/lb/*") {
 		@Override
 		public Object handle(Request request, Response response) {
 			if (DEBUG) System.out.println("OPTIONS");
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//response.header("Access-Control-Request-Method", "");
+//response.header("Access-Control-Allow-Headers", "*");
+response.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, api_key, Authorization");
 			response.status(204);
 			return ("");
 		}
@@ -215,7 +221,9 @@ public class LeaderboardREST {
       post(new Route("/lb/:gameID/:playerID/score") {
          @Override
          public Object handle(Request request, Response response) {
-			response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Request-Method", "*");
+response.header("Access-Control-Allow-Headers", "*");
 
 			String callback = request.queryParams("callback");
 
@@ -490,6 +498,9 @@ System.out.println("found second!");
       get(new Route("/lb/:gameID/:playerID/rankingposition") {
          @Override
          public Object handle(Request request, Response response) {
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Request-Method", "*");
+response.header("Access-Control-Allow-Headers", "*");
 			String callback = request.queryParams("callback");
  
 			String gameID = toSafeString(request.params(":gameID"), 30);
@@ -575,6 +586,9 @@ System.out.println("found second!");
       get(new Route("/lb/:gameID/rankedlist") {
          @Override
          public Object handle(Request request, Response response) {
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Request-Method", "*");
+response.header("Access-Control-Allow-Headers", "*");
 			String callback = request.queryParams("callback");
  
 			String gameID = toSafeString(request.params(":gameID"), 30);
@@ -743,7 +757,9 @@ System.out.println("found second!");
       put(new Route("/lb/:gameID") {
          @Override
          public Object handle(Request request, Response response) {
-			response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Request-Method", "*");
+response.header("Access-Control-Allow-Headers", "*");
 
 			String callback = request.queryParams("callback");
 
@@ -844,7 +860,9 @@ System.out.println("found second!");
       delete(new Route("/lb/:gameID") {
          @Override
          public Object handle(Request request, Response response) {
-			response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Request-Method", "*");
+response.header("Access-Control-Allow-Headers", "*");
 
 			String callback = request.queryParams("callback");
 
