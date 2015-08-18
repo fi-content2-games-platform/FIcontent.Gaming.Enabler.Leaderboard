@@ -504,6 +504,11 @@ System.out.println("found second!");
 
 			// social network
 			if (DEBUG) System.out.println("posting to social network...");
+			if (DEBUG) {
+				System.out.println("socialnetwork: " + socialnetwork);
+				System.out.println("prevBestPlayerID: " + prevBestPlayerID);
+				System.out.println("newBestPlayerID: " + newBestPlayerID);
+			}
 			if ((socialnetwork != null) && (prevBestPlayerID != null) && (newBestPlayerID != null)
 				//&& !prevBestPlayerID.equals(newBestPlayerID)) post2SocialNetwork(socialnetwork, gameID, playerID, newHighScore);
 				&& !prevBestPlayerID.equals(newBestPlayerID)) SocialNetwork.post(socialnetwork, gameID, playerID, newHighScore);
