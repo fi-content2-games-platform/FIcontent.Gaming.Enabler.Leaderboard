@@ -105,6 +105,18 @@ public class LeaderboardREST {
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	// try to create necessary tables always (if they exist, this will be ignored)
+	public static boolean checkAuthentication(String authSetting, String authQuery) {
+		if ((authSetting == null) || authSetting.isEmpty()) return true; // no password set
+
+		// there is a password set, check if authentication is ok
+		if ((authQuery == null) || authQuery.isEmpty()) return false; // no authentication
+
+		return authQuery.equals(authSetting);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	// try to create necessary tables always (if they exist, this will be ignored)
 	public static void checkMySQLInitialized() {
 		Connection con = null;
 		Statement st = null;
@@ -226,6 +238,13 @@ response.header("Access-Control-Request-Method", "*");
 response.header("Access-Control-Allow-Headers", "*");
 
 			String callback = request.queryParams("callback");
+
+			String queryAuth = request.queryParams("auth");
+			if (!checkAuthentication(settings.authenticationPassword, queryAuth)) {
+				System.out.println("unauthorized request");
+				response.status(401); // 401 unauthorized
+				return "";
+			}
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
 			String playerID = toSafeString(request.params(":playerID"), 30);
@@ -765,6 +784,13 @@ response.header("Access-Control-Allow-Headers", "*");
 
 			String callback = request.queryParams("callback");
 
+			String queryAuth = request.queryParams("auth");
+			if (!checkAuthentication(settings.authenticationPassword, queryAuth)) {
+				System.out.println("unauthorized request");
+				response.status(401); // 401 unauthorized
+				return "";
+			}
+
 			String gameID = toSafeString(request.params(":gameID"), 30);
 			if (DEBUG) System.out.println(gameID);
 
@@ -867,6 +893,13 @@ response.header("Access-Control-Request-Method", "*");
 response.header("Access-Control-Allow-Headers", "*");
 
 			String callback = request.queryParams("callback");
+
+			String queryAuth = request.queryParams("auth");
+			if (!checkAuthentication(settings.authenticationPassword, queryAuth)) {
+				System.out.println("unauthorized request");
+				response.status(401); // 401 unauthorized
+				return "";
+			}
 
 			String gameID = toSafeString(request.params(":gameID"), 30);
 			if (DEBUG) System.out.println(gameID);

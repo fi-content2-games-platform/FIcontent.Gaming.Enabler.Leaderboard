@@ -11,8 +11,8 @@ div.group {
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' type="text/javascript"></script>
 <script type="text/javascript">
 
-//var url = "http://localhost:4567/lb/";
-var url = "http://130.206.83.3:4567/lb/";
+var url = "http://localhost:4567/lb/";
+//var url = "http://130.206.83.3:4567/lb/";
 
 function utf8_to_b64(str) {
     return window.btoa(encodeURIComponent( escape( str )));
@@ -35,6 +35,8 @@ function setStatusOk(ok, str) {
 
 function submitScore(gameID, playerID, score) {
 	var pstr = url + gameID + "/" + playerID + "/score";
+	var auth = document.getElementById('auth').value;
+	if (auth.length > 0) pstr += "?auth=" + auth;
 	var userDataBase64 = utf8_to_b64(document.getElementById('userData').value);
 
 	setStatusOk(false, pstr);
@@ -106,6 +108,8 @@ function getRankedList(gameID) {
 
 function createGame(gameID, maxEntries, onlyKeepBestEntry) {
 	var pstr = url + gameID;
+	var auth = document.getElementById('auth').value;
+	if (auth.length > 0) pstr += "?auth=" + auth;
 	var asn = document.getElementById("additionalScoreNames").value.split(",");
 	var snetw = document.getElementById("socialnetwork").value;
 	setStatusOk(false, pstr);
@@ -134,6 +138,8 @@ crossDomain: true,
 
 function deleteGame(gameID) {
 	var pstr = url + gameID;
+	var auth = document.getElementById('auth').value;
+	if (auth.length > 0) pstr += "?auth=" + auth;
 	setStatusOk(false, pstr);
 
 	$.ajax({
@@ -156,7 +162,8 @@ function deleteGame(gameID) {
 <body>
 
 <form>
-game id: <input type="text" id="myGameID" value="game1">
+game id: <input type="text" id="myGameID" value="game1"><br>
+authentication password (optional): <input type="text" id="auth" value="">
 <div class="group">
 	<i>game table creation options:</i><br>
 	max entries: <input type="text" id="myMaxEntries" value="0"><br>
