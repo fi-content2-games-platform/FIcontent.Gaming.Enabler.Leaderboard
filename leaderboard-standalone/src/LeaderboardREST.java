@@ -317,7 +317,6 @@ response.header("Access-Control-Allow-Headers", "*");
 			String prevBestPlayerID = null;
 			String newBestPlayerID = null;
 
-			String socialnetwork = null;
 			try {
 				con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 
@@ -327,7 +326,8 @@ response.header("Access-Control-Allow-Headers", "*");
 				/////// get previous best player id
 				if (options.getSocialNetwork() != null) {
 					st = con.createStatement();
-					String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+					//wrong? String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+					String qustr = "SELECT x.playerID FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x order by position limit 1;";
 					if (DEBUG) System.out.println(qustr + "\n");
 					rs = st.executeQuery(qustr);
 					ResultSetMetaData rsmd = rs.getMetaData();
@@ -468,7 +468,8 @@ System.out.println("found second!");
 				/////// get new best player id
 				if (options.getSocialNetwork() != null) {
 					st = con.createStatement();
-					String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+					//wrong??String qustr = "SELECT x.position FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x WHERE x.playerID=\'" + playerID + "\' order by position limit 1;";
+					String qustr = "SELECT x.playerID FROM (SELECT mygame." + gameID + ".highscore,mygame." + gameID + ".playerID,@rownum:=@rownum+1 AS POSITION from mygame." + gameID + " JOIN (select @rownum:=0) r ORDER by mygame." + gameID + ".highscore DESC) x order by position limit 1;";
 					if (DEBUG) System.out.println(qustr + "\n");
 					rs = st.executeQuery(qustr);
 					ResultSetMetaData rsmd = rs.getMetaData();
@@ -477,6 +478,19 @@ System.out.println("found second!");
 					}
 				}
 				/////// end get new best player id
+
+				// social network
+				if (DEBUG) System.out.println("posting to social network...");
+				if (DEBUG) {
+					System.out.println("options.socialnetwork: " + options.getSocialNetwork());
+					System.out.println("prevBestPlayerID: " + prevBestPlayerID);
+					System.out.println("newBestPlayerID: " + newBestPlayerID);
+				}
+				if ((options.getSocialNetwork() != null) && (prevBestPlayerID != null) && (newBestPlayerID != null)
+					//&& !prevBestPlayerID.equals(newBestPlayerID)) post2SocialNetwork(socialnetwork, gameID, playerID, newHighScore);
+					&& !prevBestPlayerID.equals(newBestPlayerID)) SocialNetwork.post(options.getSocialNetwork(), gameID, playerID, newHighScore);
+				if (DEBUG) System.out.println("...done posting to social network");
+				////////
 
 				if (callback != null) {
 					result.append(");");
@@ -501,18 +515,6 @@ System.out.println("found second!");
 					logger.log(Level.WARNING, ex.getMessage(), ex);
 				}
 			}
-
-			// social network
-			if (DEBUG) System.out.println("posting to social network...");
-			if (DEBUG) {
-				System.out.println("socialnetwork: " + socialnetwork);
-				System.out.println("prevBestPlayerID: " + prevBestPlayerID);
-				System.out.println("newBestPlayerID: " + newBestPlayerID);
-			}
-			if ((socialnetwork != null) && (prevBestPlayerID != null) && (newBestPlayerID != null)
-				//&& !prevBestPlayerID.equals(newBestPlayerID)) post2SocialNetwork(socialnetwork, gameID, playerID, newHighScore);
-				&& !prevBestPlayerID.equals(newBestPlayerID)) SocialNetwork.post(socialnetwork, gameID, playerID, newHighScore);
-			if (DEBUG) System.out.println("...done posting to social network");
 
 			return "";
 		 }
