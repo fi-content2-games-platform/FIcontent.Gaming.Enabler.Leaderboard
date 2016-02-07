@@ -1,5 +1,7 @@
 import java.lang.String;
 
+//represents a ScoreEntry object
+
 public class ScoreEntry {
 	
 	private String name;

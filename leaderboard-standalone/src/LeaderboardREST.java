@@ -286,7 +286,7 @@ public class LeaderboardREST {
 				String values = "";
 				int newHighScore = 0;
 				byte[] userData = null;
-				
+				//ArrayList to store current ScoreEntries for add up
 				ArrayList<ScoreEntry> scores = new ArrayList<ScoreEntry>();
 				
 				try {
@@ -315,6 +315,7 @@ public class LeaderboardREST {
 																								// prevent
 																								// injection
 						values += nValue;
+						//store a copy of each pair for add up
 						scores.add(new ScoreEntry(nName,nValue));
 						
 						if (nName.equals("highscore"))
@@ -466,14 +467,17 @@ public class LeaderboardREST {
 						if (userData != null)
 							pst.setBytes(2, userData);
 						pst.executeUpdate();
+						if (DEBUG)
+							System.out.println("INSERT query executed \n");
 					} else {
 						
 						//if add on score is enabled
 						//this only supports highscore records for now
-						if (options.getAddUpScore()) {
+						if (options.getAddUpScore() && options.getOnlyKeepBestEntry()) {
 							
 							con = DriverManager.getConnection(settings.url, settings.user, settings.password);
 							st = con.createStatement();
+							//TODO: this query needs to be updated so it can support other score records too
 							String qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = \'" + playerID
 									+ "\';";
 							if (DEBUG)
@@ -487,12 +491,13 @@ public class LeaderboardREST {
 								currentBestScore = rs.getInt("highscore");
 							}
 							
+							//add up functionality for highscore records only
 							int newScore = scores.get(0).getScoreValue();
 							newScore += currentBestScore;
 							scores.get(0).setScoreValue(newScore);
 							
 							
-							//Add up score values
+							//Add up scores and place them again in values 
 							values = "";
 							for (int i = 0; i < scores.size(); i++) {
 								if (i > 0) {
@@ -528,9 +533,6 @@ public class LeaderboardREST {
 								exists = true;
 								currentBestScore = rs.getInt("highscore");
 							}
-
-							//add up to current score
-							//						newHighScore += currentBestScore;
 
 							//// if not exists or if old value is lower,
 							//// replace/insert
