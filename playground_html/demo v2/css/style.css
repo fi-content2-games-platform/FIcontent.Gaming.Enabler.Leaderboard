@@ -1,0 +1,58 @@
+body {
+	background-color: #000;
+	color: #ccc;
+	height:	100%;
+}
+
+input {
+	background-color: #484043!important;
+	color: #fff!important;
+}
+
+header {
+	text-align: center;
+}
+
+section, footer {
+	background-color: #671515;
+	border-radius: 10px;
+	padding: 15px;
+}
+
+.form-group-wrapper {
+	/*text-align: center;*/
+}
+
+.well {
+	background-color: #330504;
+	border: 1px solid #D23641;
+}
+
+.well .inner {
+	padding: 5px;
+	background-color: #a94442;
+	border:0;
+	/*border: 1px solid #671515;*/
+}
+
+div.group {
+	background-color:#444;
+	margin:25px;
+	padding:6px;
+}
+.help-block {
+	color:#D23641;
+}
+
+h1,h2,h3,h4,h5 {
+	text-align: center;
+}
+
+footer {
+		position:fixed;
+    bottom: 0;
+		right: 0;
+    width: 420px;
+    /*height: 20px;*/
+    /*margin: 0 auto;*/
+}
