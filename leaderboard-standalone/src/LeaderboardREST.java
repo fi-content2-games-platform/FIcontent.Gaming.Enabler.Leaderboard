@@ -808,6 +808,7 @@ public class LeaderboardREST {
 						response.status(200); // 200 ok
 						result.append("{\"score\":");
 						playerScore = rs.getInt("highscore");
+						result.append(playerScore);
 						result.append('}');
 					} else {
 						// no such player id in database
