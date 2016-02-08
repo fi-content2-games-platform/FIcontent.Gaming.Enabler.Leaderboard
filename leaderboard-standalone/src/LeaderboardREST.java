@@ -761,6 +761,90 @@ public class LeaderboardREST {
 				return result.toString();
 			}
 		});
+		
+		
+		/////////////////// get score  /////////////////
+		// this only supports highscore record for now//
+		
+		get(new Route("/lb/:gameID/:playerID/score") {
+			@Override
+			public Object handle(Request request, Response response) {
+				response.header("Access-Control-Allow-Origin", "*");
+				response.header("Access-Control-Request-Method", "*");
+				response.header("Access-Control-Allow-Headers", "*");
+				String callback = request.queryParams("callback");
+				if (DEBUG)
+					System.out.println(callback + "\n");
+				
+				String gameID = toSafeString(request.params(":gameID"), 30);
+				String playerID = toSafeString(request.params(":playerID"), 30);
+				int playerScore;
+
+				Connection con = null;
+				Statement st = null;
+				ResultSet rs = null;
+
+				response.type("application/json");
+
+				StringBuilder result = new StringBuilder(40);
+				if (callback != null) {
+					result.append(callback);
+					result.append("(");
+				}
+
+				try {
+					con = DriverManager.getConnection(settings.url, settings.user, settings.password);
+					st = con.createStatement();
+
+					String qustr = "SELECT highscore FROM mygame." + gameID + " WHERE playerID = '" + playerID +"';";
+					if (DEBUG)
+						System.out.println(qustr + "\n");
+
+					rs = st.executeQuery(qustr);
+
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					if (rs.next()) { // only first position
+						response.status(200); // 200 ok
+						result.append("{\"score\":");
+						playerScore = rs.getInt("highscore");
+						result.append('}');
+					} else {
+						// no such player id in database
+						response.status(404); // 404 Not Found
+					}
+					if (callback != null) {
+						result.append(");");
+					}
+
+					if (DEBUG)
+						System.out.println(result.toString() + "\n");
+
+				} catch (SQLException ex) {
+					response.status(503); // 503 Service Unavailable
+					logger.log(Level.SEVERE, ex.getMessage(), ex);
+					// } catch (Exception e) {
+					// response.status(503); // 503 Service Unavailable
+				} finally {
+					try {
+						if (rs != null) {
+							rs.close();
+						}
+						if (st != null) {
+							st.close();
+						}
+						if (con != null) {
+							con.close();
+						}
+
+					} catch (SQLException ex) {
+						logger.log(Level.WARNING, ex.getMessage(), ex);
+					}
+				}
+
+				return result.toString();
+			}
+		});
 
 		/////////////////// get ranked (ordered) list of entries
 		/////////////////// ///////////////////
