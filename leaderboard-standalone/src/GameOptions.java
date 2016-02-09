@@ -35,6 +35,7 @@ class GameOptions {
 		if (rs.next()) { // only first position
 			maxEntries = rs.getInt("maxEntries");
 			onlyKeepBestEntry = rs.getBoolean("onlyKeepBestEntry");
+			addUpScore = rs.getBoolean("addUpScore");
 			socialnetwork = rs.getString("socialnetwork");
 		}
 		if (LeaderboardREST.DEBUG) {
@@ -52,4 +53,7 @@ class GameOptions {
 
 	protected boolean onlyKeepBestEntry;
 	public boolean getOnlyKeepBestEntry() { return onlyKeepBestEntry; }
+	
+	protected boolean addUpScore;
+	public boolean getAddUpScore() { return addUpScore; }
 }
