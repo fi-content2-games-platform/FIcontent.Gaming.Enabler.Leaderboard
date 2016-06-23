@@ -50,3 +50,6 @@ The software was tested on Linux and Windows and should run on any platform supp
 3a. [Install the leaderboard as a service](leaderboard-standalone/installation-as-service-in_etc-init.d)
 or
 3b. start the server manually with leaderboard-standalone/bin/run.*
+
+### Testing
+One good way to get started is to use the div/admin-and-test.html file. For further information, please refer to the [development guide] (http://wiki.mediafi.org/doku.php/ficontent.gaming.enabler.leaderboard.developerguide).
